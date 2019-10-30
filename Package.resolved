@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "OpenSwiftUI",
+        "repositoryURL": "https://github.com/Cosmo/OpenSwiftUI.git",
+        "state": {
+          "branch": "master",
+          "revision": "cb5ae659efd7ca88c17471f256758ae00040e054",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
