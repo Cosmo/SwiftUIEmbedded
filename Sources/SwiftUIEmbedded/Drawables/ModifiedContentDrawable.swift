@@ -4,8 +4,6 @@ public struct ModifiedContentDrawable<Modifier>: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
     
-    public var offeredSize: Size = Size.zero
-    
     let modifier: Modifier
     
     public init(modifier: Modifier) {

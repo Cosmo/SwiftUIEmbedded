@@ -4,8 +4,6 @@ public struct ColorDrawable: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
     
-    public var offeredSize: Size = Size.zero
-    
     let color: Color
     public init(color: Color) {
         self.color = color

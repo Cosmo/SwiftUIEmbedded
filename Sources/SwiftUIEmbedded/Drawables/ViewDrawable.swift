@@ -5,8 +5,6 @@ public struct ViewDrawable: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
     
-    public var offeredSize: Size = Size.zero
-    
     public init() {
         
     }

@@ -5,8 +5,6 @@ public struct TextDrawable: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
     
-    public var offeredSize: Size = Size.zero
-    
     public let text: String
     public init(text: String) {
         self.text = text
