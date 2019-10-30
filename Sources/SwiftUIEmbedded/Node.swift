@@ -102,7 +102,7 @@ extension Node {
             
             var maxHeight = 0
             for child in children {
-                let childHeight = child.value.wantedHeightForProposal(Int.max)
+                let childHeight = child.value.wantedHeightForProposal(remainingWidth)
                 if child.value.size.height < 1 {
                     child.value.size.height = childHeight
                 }
@@ -154,7 +154,7 @@ extension Node {
             
             var maxHeight = 0
             for child in children {
-                let childHeight = child.value.wantedHeightForProposal(Int.max)
+                let childHeight = child.value.wantedHeightForProposal(remainingWidth)
                 if child.value.size.height < 1 {
                     child.value.size.height = childHeight
                 }
