@@ -68,8 +68,6 @@ extension Node {
     public func calculateSize(givenWidth: Int) {
         guard children.count > 0 else { return }
         
-        print(Mirror(reflecting: self.value).subjectType)
-        
         if self.value is VStackDrawable || self.value is RootDrawable {
             var remainingWidth = givenWidth - internalSpacingRequirements
             var proposedWidth = remainingWidth
