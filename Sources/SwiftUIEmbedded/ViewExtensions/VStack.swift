@@ -1,8 +1,8 @@
 import OpenSwiftUI
 
 extension VStack: ViewBuildable {
-    public func buildDebugTree(tree: inout Node, parent: Node) {
-        let node = Node(value: VStackDrawable())
+    public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
+        let node = ViewNode(value: VStackDrawable())
         parent.addChild(node: node)
         
         ViewExtractor.extractViews(contents: _content).forEach {

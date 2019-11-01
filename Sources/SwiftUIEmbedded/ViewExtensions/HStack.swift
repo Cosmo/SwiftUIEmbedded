@@ -1,8 +1,8 @@
 import OpenSwiftUI
 
 extension HStack: ViewBuildable {
-    public func buildDebugTree(tree: inout Node, parent: Node) {
-        let node = Node(value: HStackDrawable())
+    public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
+        let node = ViewNode(value: HStackDrawable())
         parent.addChild(node: node)
         
         ViewExtractor.extractViews(contents: _content).forEach {

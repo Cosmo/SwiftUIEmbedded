@@ -1,72 +1,44 @@
 import OpenSwiftUI
 import CoreGraphics
 import Foundation
+import Nodes
 
-public class Node {
-    public weak var parent: Node?
-    public var children = [Node]()
-    public var value: Drawable
+public final class ViewNode: Node {
+    public typealias Value = Drawable
+    public var value: Value
+    public weak var parent: ViewNode?
+    public var children: [ViewNode]
     public var uuid = UUID()
-    
-    public init(value: Drawable) {
+    public init(value: Value) {
         self.value = value
-    }
-    
-    public func addChild(node: Node) {
-        children.append(node)
-        node.parent = self
-    }
-    
-    public var ancestors: [Node] {
-        var nodes: [Node] = []
-        var node: Node? = self
-        
-        repeat {
-            if let node = node, node.uuid != self.uuid {
-                nodes.append(node)
-            }
-            node = node?.parent
-            if node?.parent == nil {
-                break
-            }
-        } while node?.parent != nil
-        
-        return nodes
+        self.children = []
     }
 }
 
-extension Node {
-    public var lineBasedOutput: String {
-        var outputBuffer = ""
-        generateLines(outputBuffer: &outputBuffer)
-        return outputBuffer
-    }
-    
-    private func generateLines(outputBuffer: inout String, prefix: String = "", childrenPrefix: String = "") {
-        outputBuffer.append("\(prefix)\(value.debugDescription)\n")
-        let childrenCount = children.count
-        for (index, child) in children.enumerated() {
-            if childrenCount > index.advanced(by: 1) {
-                child.generateLines(outputBuffer: &outputBuffer, prefix: childrenPrefix + "├── ", childrenPrefix: childrenPrefix + "│   ")
-            } else {
-                child.generateLines(outputBuffer: &outputBuffer, prefix: childrenPrefix + "└── ", childrenPrefix: childrenPrefix + "    ")
-            }
-        }
+extension ViewNode: Equatable {
+    public static func == (lhs: ViewNode, rhs: ViewNode) -> Bool {
+        return lhs.value.debugDescription == rhs.value.debugDescription && lhs.parent == rhs.parent
     }
 }
 
-extension Node {
+extension ViewNode: CustomStringConvertible {
+    public var description: String {
+        return "\(value)"
+    }
+}
+
+extension ViewNode {
     static var defaultSpacing: Int {
         return 8
     }
     
     var internalSpacingRequirements: Int {
-        let numberOfSpacings = max(children.count - 1, 0)
+        let numberOfSpacings = max(degree - 1, 0)
         return numberOfSpacings * Self.defaultSpacing
     }
     
     public func calculateSize(givenWidth: Int) {
-        guard children.count > 0 else { return }
+        guard isBranch else { return }
         
         if self.value is VStackDrawable || self.value is RootDrawable {
             var remainingWidth = givenWidth - internalSpacingRequirements
@@ -122,7 +94,7 @@ extension Node {
         
         if self.value is HStackDrawable {
             var remainingWidth = givenWidth - internalSpacingRequirements
-            var proposedWidth = remainingWidth / children.count
+            var proposedWidth = remainingWidth / degree
             var totalWidth = internalSpacingRequirements
             
             var requestedWidthsWithIndex = [(index: Int, width: Int)]()
@@ -168,7 +140,7 @@ extension Node {
             for (index, child) in children.enumerated() {
                 if index > 0 {
                     let previousNode = children[index - 1]
-                    child.value.origin.x = previousNode.value.origin.x + previousNode.value.size.width + Node.defaultSpacing
+                    child.value.origin.x = previousNode.value.origin.x + previousNode.value.size.width + ViewNode.defaultSpacing
                 }
             }
         }

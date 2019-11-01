@@ -1,8 +1,8 @@
 import OpenSwiftUI
 
 extension ZStack: ViewBuildable {
-    public func buildDebugTree(tree: inout Node, parent: Node) {
-        let node = Node(value: ZStackDrawable())
+    public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
+        let node = ViewNode(value: ZStackDrawable())
         parent.addChild(node: node)
         
         ViewExtractor.extractViews(contents: _content).forEach {

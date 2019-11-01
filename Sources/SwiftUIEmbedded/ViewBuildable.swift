@@ -1,5 +1,5 @@
 import OpenSwiftUI
 
 public protocol ViewBuildable {
-    func buildDebugTree(tree: inout Node, parent: Node)
+    func buildDebugTree(tree: inout ViewNode, parent: ViewNode)
 }

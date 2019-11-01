@@ -2,11 +2,20 @@
   "object": {
     "pins": [
       {
+        "package": "Nodes",
+        "repositoryURL": "https://github.com/Cosmo/Nodes.git",
+        "state": {
+          "branch": "master",
+          "revision": "d3efcbe78f71a63cf39aab8a95d8351e2b5a0e6f",
+          "version": null
+        }
+      },
+      {
         "package": "OpenSwiftUI",
         "repositoryURL": "https://github.com/Cosmo/OpenSwiftUI.git",
         "state": {
           "branch": "master",
-          "revision": "cb5ae659efd7ca88c17471f256758ae00040e054",
+          "revision": "350f295221ff9d192d4a4e3db5d8b18b9dbf87f9",
           "version": null
         }
       }
