@@ -1,9 +1,4 @@
-//
-//  ViewBuildable.swift
-//  
-//
-//  Created by Devran on 30.10.19.
-//
+import OpenSwiftUI
 
 public protocol ViewBuildable {
     func buildDebugTree(tree: inout Node, parent: Node)
