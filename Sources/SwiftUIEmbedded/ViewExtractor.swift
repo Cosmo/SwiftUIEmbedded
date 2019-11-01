@@ -9,6 +9,7 @@ internal struct ViewExtractor<Content>: View where Content: View {
         
         if isTupleView, let tupleValue = contentMirror.children.first(where: { $0.label == "value" })?.value {
             // Multiple Views
+            // FIXME: Ignores custom views inside of a TupleView
             Mirror(reflecting: tupleValue).children.compactMap {
                 $0.value as? ViewBuildable
             }.forEach {
