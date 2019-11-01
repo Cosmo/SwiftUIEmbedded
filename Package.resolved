@@ -18,6 +18,15 @@
           "revision": "350f295221ff9d192d4a4e3db5d8b18b9dbf87f9",
           "version": null
         }
+      },
+      {
+        "package": "Pixels",
+        "repositoryURL": "https://github.com/Cosmo/Pixels.git",
+        "state": {
+          "branch": "master",
+          "revision": "b00e384d65906cdcc43a004210ee37f94c2ef0a5",
+          "version": null
+        }
       }
     ]
   },
