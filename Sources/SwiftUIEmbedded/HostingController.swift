@@ -7,10 +7,10 @@ import AppKit
 public class HostingController<Content: View> {
     public typealias ColorDepth = UInt32
     public typealias ColorDepthProtocol = FixedWidthInteger & UnsignedInteger
-    public var canvas: Pixels<ColorDepth>
+    private var canvas: Pixels<ColorDepth>
     
-    public var rootView: Content
-    public var tree: ViewNode
+    private var rootView: Content
+    private var tree: ViewNode
     
     public init(rootView: Content, width: Int = 320, height: Int = 240) {
         self.canvas = Pixels<ColorDepth>(width: width, height: height)
@@ -19,7 +19,7 @@ public class HostingController<Content: View> {
         (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
     }
     
-    public func calculateTreeSizes() {
+    private func calculateTreeSizes() {
         let width = canvas.canvasWidth
         let height = canvas.canvasHeight
         let displaySize = Size(width: width, height: height)
@@ -27,7 +27,7 @@ public class HostingController<Content: View> {
         tree.value.size = displaySize
     }
     
-    func drawNodesRecursively(node: ViewNode) {
+    private func drawNodesRecursively(node: ViewNode) {
         guard node.value.size.width > 0 else { return }
         
         let parentPadding = (node.parent?.value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
@@ -93,9 +93,7 @@ public class HostingController<Content: View> {
     public func createPixelBufferImage() -> NSImage? {
         calculateTreeSizes()
         print(tree.lineBasedDescription)
-        
         drawNodesRecursively(node: tree)
-        
         return canvas.image()
     }
     #endif
@@ -103,9 +101,7 @@ public class HostingController<Content: View> {
     public func createPixelBuffer() -> [ColorDepth] {
         calculateTreeSizes()
         print(tree.lineBasedDescription)
-        
         drawNodesRecursively(node: tree)
-        
         return canvas.bytes
     }
 }
