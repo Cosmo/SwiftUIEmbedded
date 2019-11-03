@@ -41,7 +41,7 @@ public class HostingController<Content: View> {
                        y: y,
                        width: width,
                        height: node.value.size.height,
-                       color: (0x00000000..<0xFFFFFF00).randomElement()!,
+                       color: ColorDepth.max,
                        dotted: true,
                        brushSize: 1)
         
