@@ -89,7 +89,7 @@ public class HostingController<Content: View> {
     }
     
     #if canImport(AppKit)
-    public func createPixelBuffer() -> NSImage? {
+    public func createPixelBufferImage() -> NSImage? {
         calculateTreeSizes()
         print(tree.lineBasedDescription)
         
@@ -98,4 +98,13 @@ public class HostingController<Content: View> {
         return canvas.image()
     }
     #endif
+    
+    public func createPixelBuffer() -> [ColorDepth] {
+        calculateTreeSizes()
+        print(tree.lineBasedDescription)
+        
+        drawNodesRecursively(node: tree)
+        
+        return canvas.bytes
+    }
 }
