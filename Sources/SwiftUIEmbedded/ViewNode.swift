@@ -1,5 +1,4 @@
 import OpenSwiftUI
-import CoreGraphics
 import Foundation
 import Nodes
 
