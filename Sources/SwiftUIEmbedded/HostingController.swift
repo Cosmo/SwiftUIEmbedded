@@ -7,7 +7,7 @@ import AppKit
 public class HostingController<Content: View> {
     public typealias ColorDepth = UInt32
     public typealias ColorDepthProtocol = FixedWidthInteger & UnsignedInteger
-    var canvas: Pixels<ColorDepth>
+    public var canvas: Pixels<ColorDepth>
     
     public var rootView: Content
     public var tree: ViewNode
