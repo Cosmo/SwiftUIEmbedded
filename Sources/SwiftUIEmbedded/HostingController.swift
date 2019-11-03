@@ -7,11 +7,12 @@ import AppKit
 public class HostingController<Content: View> {
     public typealias ColorDepth = UInt32
     public typealias ColorDepthProtocol = FixedWidthInteger & UnsignedInteger
-    var canvas = Pixels<ColorDepth>(width: 128, height: 296)
+    var canvas: Pixels<ColorDepth>
     
     public var rootView: Content
     public var tree: ViewNode
-    public init(rootView: Content) {
+    public init(rootView: Content, width: Int = 320, height: Int = 240) {
+        self.canvas = Pixels<ColorDepth>(width: width, height: height)
         self.rootView = rootView
         self.tree = ViewNode(value: RootDrawable())
         (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
@@ -55,6 +56,14 @@ public class HostingController<Content: View> {
                                         alignment: .left,
                                         color: color,
                                         size: textNode.font.fontSizeToZoomLevel)
+        }
+        
+        if let imageNode = node.value as? ImageDrawable {
+            canvas.drawBitmap(bytes: imageNode.imageData.bytes,
+                              x: x,
+                              y: y,
+                              width: imageNode.imageData.size.width,
+                              height: imageNode.imageData.size.height)
         }
         
         if let _ = node.value as? CircleDrawable {
