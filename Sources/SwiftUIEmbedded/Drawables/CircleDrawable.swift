@@ -19,6 +19,6 @@ public struct CircleDrawable: Drawable {
 
 extension CircleDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "CircleDrawable [\(size)]"
+        return "Circle [\(size)]"
     }
 }
