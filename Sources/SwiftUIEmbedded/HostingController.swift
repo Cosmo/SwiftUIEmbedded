@@ -11,6 +11,7 @@ public class HostingController<Content: View> {
     
     public var rootView: Content
     public var tree: ViewNode
+    
     public init(rootView: Content, width: Int = 320, height: Int = 240) {
         self.canvas = Pixels<ColorDepth>(width: width, height: height)
         self.rootView = rootView
@@ -46,7 +47,7 @@ public class HostingController<Content: View> {
                        brushSize: 1)
         
         if let textNode = node.value as? TextDrawable {
-            let color = canvas.colorDepth(textNode.color)
+            let color = canvas.unsignedIntegerFromColor(textNode.color)
             
             canvas.drawBitmapText(text: textNode.text,
                                         x: x,
