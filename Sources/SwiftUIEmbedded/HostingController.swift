@@ -45,10 +45,7 @@ public class HostingController<Content: View> {
                        brushSize: 1)
         
         if let textNode = node.value as? TextDrawable {
-            let blue = Int(textNode.color._blue * 255) << 8
-            let green = Int(textNode.color._green * 255) << 16
-            let red = Int(textNode.color._red * 255) << 24
-            let color = ColorDepth(blue + green + red)
+            let color = canvas.colorDepth(textNode.color)
             
             canvas.drawBitmapText(text: textNode.text,
                                         x: x,
