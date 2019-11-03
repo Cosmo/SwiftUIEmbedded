@@ -10,9 +10,9 @@ import OpenSwiftUI
 
 extension Pixels {
     func colorDepth(_ color: Color) -> ColorDepth {
-        let blue = Int(color._blue * 255) << 8
-        let green = Int(color._green * 255) << 16
-        let red = Int(color._red * 255) << 24
+        let blue = UInt32(color._blue * 255) << 8
+        let green = UInt32(color._green * 255) << 16
+        let red = UInt32(color._red * 255) << 24
         return ColorDepth(blue + green + red)
     }
 }
