@@ -29,21 +29,23 @@ extension ViewNode: CustomStringConvertible {
 
 extension ViewNode {
     static var defaultSpacing: Int {
-        return 8
+        return 10
     }
     
     var internalSpacingRequirements: Int {
-        let numberOfSpacings = max(degree - 1, 0)
+        let numberOfSpacings = degree - 1
         return numberOfSpacings * Self.defaultSpacing
     }
     
     public func calculateSize(givenWidth: Int) {
         guard isBranch else { return }
         
-        if self.value is VStackDrawable || self.value is RootDrawable {
-            var remainingWidth = givenWidth - internalSpacingRequirements
+        let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
+        
+        if self.value is VStackDrawable || self.value is RootDrawable || self.value is ModifiedContentDrawable<PaddingModifier> {
+            var remainingWidth = givenWidth - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
             var proposedWidth = remainingWidth
-            var totalWidth = internalSpacingRequirements
+            var totalWidth = 0
             
             var requestedWidthsWithIndex = [(index: Int, width: Int)]()
             for (index, child) in children.enumerated() {
@@ -70,7 +72,7 @@ extension ViewNode {
                 }
             }
             
-            var maxHeight = 0
+            var maxHeight = Int(paddingFromSelf.top + paddingFromSelf.bottom)
             for child in children {
                 let childHeight = child.value.wantedHeightForProposal(remainingWidth)
                 if child.value.size.height < 1 {
@@ -79,21 +81,21 @@ extension ViewNode {
                 maxHeight += childHeight
             }
             
-            let total = children.map { $0.value.size.width }.max()
-            let totalHeight = children.reduce(0, { $0 + $1.value.size.height })
+            let total = (children.map { $0.value.size.width }.max() ?? 0) + Int(paddingFromSelf.leading + paddingFromSelf.trailing)
+            let totalHeight = children.reduce(0, { $0 + $1.value.size.height }) + internalSpacingRequirements
             
-            value.size = Size(width: total ?? 0, height: totalHeight)
+            value.size = Size(width: total, height: totalHeight + Int(paddingFromSelf.top + paddingFromSelf.bottom))
             
             for (index, child) in children.enumerated() {
                 if index > 0 {
                     let previousNode = children[index - 1]
-                    child.value.origin.y = previousNode.value.origin.y + previousNode.value.size.height// + Node.defaultSpacing
+                    child.value.origin.y = previousNode.value.origin.y + previousNode.value.size.height + ViewNode.defaultSpacing
                 }
             }
         }
         
         if self.value is HStackDrawable {
-            var remainingWidth = givenWidth - internalSpacingRequirements
+            var remainingWidth = givenWidth - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
             var proposedWidth = remainingWidth / degree
             var totalWidth = internalSpacingRequirements
             

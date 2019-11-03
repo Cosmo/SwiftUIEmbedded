@@ -19,6 +19,6 @@ struct VStackDrawable: Drawable {
 
 extension VStackDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "VStack [\(size)]"
+        return "VStack [\(origin), \(size)]"
     }
 }

@@ -2,6 +2,6 @@ import OpenSwiftUI
 
 extension Text: ViewBuildable {
     public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
-        parent.addChild(node: ViewNode(value: TextDrawable(text: _content)))
+        parent.addChild(node: ViewNode(value: TextDrawable(text: _content, font: _font, color: _color)))
     }
 }

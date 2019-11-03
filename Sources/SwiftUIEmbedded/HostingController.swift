@@ -7,62 +7,77 @@ import AppKit
 public class HostingController<Content: View> {
     public typealias ColorDepth = UInt32
     public typealias ColorDepthProtocol = FixedWidthInteger & UnsignedInteger
-    var pixelBuffer = Pixels<ColorDepth>(width: 640, height: 640)
+    var canvas = Pixels<ColorDepth>(width: 128, height: 296)
     
     public var rootView: Content
     public var tree: ViewNode
     public init(rootView: Content) {
         self.rootView = rootView
-        
         self.tree = ViewNode(value: RootDrawable())
         (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
     }
     
     public func calculateTreeSizes() {
-        let displaySize = Size(width: pixelBuffer.canvasWidth, height: pixelBuffer.canvasHeight)
-        tree.calculateSize(givenWidth: displaySize.width)
+        let width = canvas.canvasWidth
+        let height = canvas.canvasHeight
+        let displaySize = Size(width: width, height: height)
+        tree.calculateSize(givenWidth: width)
         tree.value.size = displaySize
     }
     
-    public func createTree() {
-        calculateTreeSizes()
-        print(tree.lineBasedDescription)
-    }
-    
-    func drawElement(node: ViewNode) {
-        if node.value.size.width == Size.zero.width {
-            return
-        }
+    func drawNodesRecursively(node: ViewNode) {
+        guard node.value.size.width > 0 else { return }
         
-        let x = node.ancestors.reduce(0, { $0 + $1.value.origin.x }) + node.value.origin.x
-        let y = node.ancestors.reduce(0, { $0 + $1.value.origin.y }) + node.value.origin.y
+        let parentPadding = (node.parent?.value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
+        
+        let x = node.ancestors.reduce(0, { $0 + $1.value.origin.x }) + node.value.origin.x + Int(parentPadding.leading)
+        let y = node.ancestors.reduce(0, { $0 + $1.value.origin.y }) + node.value.origin.y + Int(parentPadding.top)
         
         let width = node.value.size.width
         let height = node.value.size.height
         
-        pixelBuffer.drawBox(x: x,
-                            y: y,
-                            width: width,
-                            height: node.value.size.height,
-                            color: (0x00000000..<0xFFFFFF00).randomElement()!, brushSize: 3)
+        canvas.drawBox(x: x,
+                       y: y,
+                       width: width,
+                       height: node.value.size.height,
+                       color: (0x00000000..<0xFFFFFF00).randomElement()!,
+                       dotted: true,
+                       brushSize: 1)
         
         if let textNode = node.value as? TextDrawable {
-            pixelBuffer.drawBitmapText(text: textNode.text,
-                                       x: x,
-                                       y: y,
-                                       width: width,
-                                       height: height,
-                                       alignment: .left,
-                                       size: 2)
+            let blue = Int(textNode.color._blue * 255) << 8
+            let green = Int(textNode.color._green * 255) << 16
+            let red = Int(textNode.color._red * 255) << 24
+            let color = ColorDepth(blue + green + red)
+            
+            canvas.drawBitmapText(text: textNode.text,
+                                        x: x,
+                                        y: y,
+                                        width: width,
+                                        height: height,
+                                        alignment: .left,
+                                        color: color,
+                                        size: textNode.font.fontSizeToZoomLevel)
         }
         
         if let _ = node.value as? CircleDrawable {
-            pixelBuffer.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2)
+            canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2)
         }
         
-        if node.children.count > 0 {
+        if let _ = node.value as? DividerDrawable {
+            let ancestor = node.ancestors.first(where: { $0.value is VStackDrawable || $0.value is RootDrawable || $0.value is HStackDrawable })
+            
+            if let ancestor = ancestor, ancestor.value is HStackDrawable {
+                canvas.drawVerticalLine(x: x + width / 2, y: y, height: height)
+            } else {
+                canvas.drawHorizontalLine(x: x, y: y + height / 2, width: width)
+            }
+        }
+        
+        
+        if node.isBranch {
             for child in node.children {
-                drawElement(node: child)
+                drawNodesRecursively(node: child)
             }
         }
     }
@@ -72,9 +87,9 @@ public class HostingController<Content: View> {
         calculateTreeSizes()
         print(tree.lineBasedDescription)
         
-        drawElement(node: tree)
+        drawNodesRecursively(node: tree)
         
-        return pixelBuffer.image()
+        return canvas.image()
     }
     #endif
 }
