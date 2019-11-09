@@ -42,9 +42,9 @@ extension ViewNode {
         let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
         
         if self.value is VStackDrawable || self.value is RootDrawable || self.value is ModifiedContentDrawable<PaddingModifier> {
-            var remainingWidth = givenWidth - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
+            
+            var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
             var proposedWidth = remainingWidth
-            var totalWidth = 0
             
             var requestedWidthsWithIndex = [(index: Int, width: Int)]()
             for (index, child) in children.enumerated() {
@@ -55,7 +55,6 @@ extension ViewNode {
                     if child.value.size.width < 1 {
                         child.value.size.width = wantedWidth
                     }
-                    totalWidth = totalWidth + wantedWidth
                 } else {
                     requestedWidthsWithIndex.append((index: index, width: wantedWidth))
                 }
@@ -65,9 +64,8 @@ extension ViewNode {
                 proposedWidth = remainingWidth
                 for unclearWidth in requestedWidthsWithIndex {
                     if children[unclearWidth.index].value.size.width < 1 {
-                        children[unclearWidth.index].value.size.width = proposedWidth
+                        children[unclearWidth.index].value.size.width = givenWidth
                     }
-                    totalWidth = totalWidth + proposedWidth
                 }
             }
             
@@ -102,7 +100,9 @@ extension ViewNode {
             for (index, child) in children.enumerated() {
                 child.calculateSize(givenWidth: proposedWidth)
                 let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
-                if proposedWidth > wantedWidth {
+                if child.value.size.width > 0 {
+                    remainingWidth = remainingWidth - child.value.size.width
+                } else if proposedWidth > wantedWidth {
                     remainingWidth = remainingWidth - wantedWidth
                     if child.value.size.width < 1 {
                         child.value.size.width = wantedWidth
