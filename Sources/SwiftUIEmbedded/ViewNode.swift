@@ -124,13 +124,24 @@ extension ViewNode {
             }
             
             var maxHeight = 0
-            for child in children {
-                let childHeight = child.value.wantedHeightForProposal(remainingWidth)
-                if child.value.size.height < 1 {
-                    child.value.size.height = childHeight
+            var dividerIndicies = [Int]()
+            for (index, child) in children.enumerated() {
+                if child.value is DividerDrawable {
+                    dividerIndicies.append(index)
+                } else {
+                    let childHeight = child.value.wantedHeightForProposal(remainingWidth)
+                    if child.value.size.height < 1 {
+                        child.value.size.height = childHeight
+                    }
+                    if childHeight > maxHeight {
+                        maxHeight = childHeight
+                    }
                 }
-                if childHeight > maxHeight {
-                    maxHeight = childHeight
+            }
+            
+            if dividerIndicies.count > 0 {
+                for dividerIndex in dividerIndicies {
+                    children[dividerIndex].value.size.height = maxHeight
                 }
             }
             
