@@ -46,9 +46,20 @@ public class HostingController<Content: View> {
                        dotted: true,
                        brushSize: 1)
         
+        if let backgroundNode = node.value as? ModifiedContentDrawable<_BackgroundModifier<Color>> {
+            let color = canvas.unsignedIntegerFromColor(backgroundNode.modifier.background)
+            canvas.drawBox(x: x,
+                           y: y,
+                           width: width,
+                           height: node.value.size.height,
+                           color: color,
+                           dotted: false,
+                           brushSize: 1,
+                           filled: true)
+        }
+        
         if let textNode = node.value as? TextDrawable {
             let color = canvas.unsignedIntegerFromColor(textNode.color)
-            
             canvas.drawBitmapText(text: textNode.text,
                                         x: x,
                                         y: y,

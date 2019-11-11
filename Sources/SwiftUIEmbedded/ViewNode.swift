@@ -38,10 +38,10 @@ extension ViewNode {
     
     public func calculateSize(givenWidth: Int) {
         guard isBranch else { return }
-        
+
         let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
         
-        if self.value is VStackDrawable || self.value is RootDrawable || self.value is ModifiedContentDrawable<PaddingModifier> {
+        if self.value is VStackDrawable || self.value is RootDrawable || self.value is ModifiedContentDrawable<PaddingModifier> || self.value is ModifiedContentDrawable<_BackgroundModifier<Color>> {
             
             var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
             var proposedWidth = remainingWidth
@@ -97,25 +97,33 @@ extension ViewNode {
             var totalWidth = internalSpacingRequirements
             
             var requestedWidthsWithIndex = [(index: Int, width: Int)]()
+            var dividerIndicies = [Int]()
             for (index, child) in children.enumerated() {
                 child.calculateSize(givenWidth: proposedWidth)
                 let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
-                if child.value.size.width > 0 {
-                    remainingWidth = remainingWidth - child.value.size.width
-                } else if proposedWidth > wantedWidth {
+                if proposedWidth > wantedWidth {
+                    if child.value is DividerDrawable {
+                        dividerIndicies.append(index)
+                    }
                     remainingWidth = remainingWidth - wantedWidth
                     if child.value.size.width < 1 {
                         child.value.size.width = wantedWidth
                     }
                     totalWidth = totalWidth + wantedWidth
+                } else if child.value.size.width > 0 {
+                    remainingWidth = remainingWidth - child.value.size.width
                 } else {
                     requestedWidthsWithIndex.append((index: index, width: wantedWidth))
                 }
+                print(child.value)
             }
+            
+            print("UNCLEAR")
             
             if requestedWidthsWithIndex.count > 0 {
                 proposedWidth = remainingWidth / requestedWidthsWithIndex.count
                 for unclearWidth in requestedWidthsWithIndex {
+                    print(children[unclearWidth.index].value)
                     if children[unclearWidth.index].value.size.width < 1 {
                         children[unclearWidth.index].value.size.width = proposedWidth
                     }
@@ -124,30 +132,26 @@ extension ViewNode {
             }
             
             var maxHeight = 0
-            var dividerIndicies = [Int]()
-            for (index, child) in children.enumerated() {
-                if child.value is DividerDrawable {
-                    dividerIndicies.append(index)
-                } else {
-                    let childHeight = child.value.wantedHeightForProposal(remainingWidth)
-                    if child.value.size.height < 1 {
-                        child.value.size.height = childHeight
-                    }
-                    if childHeight > maxHeight {
-                        maxHeight = childHeight
-                    }
+            for child in children {
+                let childHeight = child.value.wantedHeightForProposal(remainingWidth)
+                if child.value.size.height < 1 {
+                    child.value.size.height = childHeight
                 }
-            }
-            
-            if dividerIndicies.count > 0 {
-                for dividerIndex in dividerIndicies {
-                    children[dividerIndex].value.size.height = maxHeight
+                if childHeight > maxHeight {
+                    maxHeight = childHeight
                 }
             }
             
             let total = children.reduce(0, { $0 + $1.value.size.width }) + internalSpacingRequirements
-            let totalHeight = children.map { $0.value.size.height }.max()
-            value.size = Size(width: total, height: totalHeight ?? 0)
+            let totalHeight = children.map { $0.value.size.height }.max() ?? 1
+            
+            if dividerIndicies.count > 0 {
+                for dividerIndex in dividerIndicies {
+                    children[dividerIndex].value.size.height = totalHeight
+                }
+            }
+            
+            value.size = Size(width: total, height: totalHeight)
             
             for (index, child) in children.enumerated() {
                 if index > 0 {
