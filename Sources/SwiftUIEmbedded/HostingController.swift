@@ -59,7 +59,7 @@ public class HostingController<Content: View> {
         }
         
         if let textNode = node.value as? TextDrawable {
-            let color = canvas.unsignedIntegerFromColor(textNode.color)
+            let color = canvas.unsignedIntegerFromColor(textNode.resolvedColor)
             canvas.drawBitmapText(text: textNode.text,
                                         x: x,
                                         y: y,
@@ -67,7 +67,7 @@ public class HostingController<Content: View> {
                                         height: height,
                                         alignment: .left,
                                         color: color,
-                                        size: textNode.font.fontSizeToZoomLevel)
+                                        size: textNode.resolvedFont.fontSizeToZoomLevel)
         }
         
         if let imageNode = node.value as? ImageDrawable {

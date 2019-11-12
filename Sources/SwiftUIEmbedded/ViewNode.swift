@@ -41,7 +41,7 @@ extension ViewNode {
 
         let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
         
-        if self.value is VStackDrawable || self.value is RootDrawable || self.value is ModifiedContentDrawable<PaddingModifier> || self.value is ModifiedContentDrawable<_BackgroundModifier<Color>> {
+        if self.value is VStackDrawable || self.value is RootDrawable || self.value is ModifiedContentDrawable<PaddingModifier> || self.value is ModifiedContentDrawable<_BackgroundModifier<Color>> || self.value is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<Optional<Font>>> {
             
             var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
             var proposedWidth = remainingWidth
@@ -115,15 +115,15 @@ extension ViewNode {
                 } else {
                     requestedWidthsWithIndex.append((index: index, width: wantedWidth))
                 }
-                print(child.value)
+                // print(child.value)
             }
             
-            print("UNCLEAR")
+            // print("UNCLEAR")
             
             if requestedWidthsWithIndex.count > 0 {
                 proposedWidth = remainingWidth / requestedWidthsWithIndex.count
                 for unclearWidth in requestedWidthsWithIndex {
-                    print(children[unclearWidth.index].value)
+                    // print(children[unclearWidth.index].value)
                     if children[unclearWidth.index].value.size.width < 1 {
                         children[unclearWidth.index].value.size.width = proposedWidth
                     }
