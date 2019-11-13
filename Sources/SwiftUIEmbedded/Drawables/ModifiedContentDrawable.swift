@@ -21,6 +21,6 @@ public struct ModifiedContentDrawable<Modifier>: Drawable {
 
 extension ModifiedContentDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "ModifiedContent [\(size)] {\(modifier)}"
+        return "ModifiedContent [\(origin), \(size)] {\(modifier)}"
     }
 }

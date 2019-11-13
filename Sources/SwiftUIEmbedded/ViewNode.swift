@@ -28,7 +28,7 @@ extension ViewNode: CustomStringConvertible {
 
 extension ViewNode {
     static var defaultSpacing: Int {
-        return 10
+        return 20
     }
     
     var internalSpacingRequirements: Int {
@@ -38,13 +38,18 @@ extension ViewNode {
     
     public func calculateSize(givenWidth: Int) {
         guard isBranch else { return }
-        
+
         let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
         
-        if self.value is VStackDrawable || self.value is RootDrawable || self.value is ModifiedContentDrawable<PaddingModifier> {
-            var remainingWidth = givenWidth - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
+        switch value {
+        case is VStackDrawable,
+             is RootDrawable,
+             is ModifiedContentDrawable<PaddingModifier>,
+             is ModifiedContentDrawable<_BackgroundModifier<Color>>,
+             is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<Optional<Font>>>,
+             is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<ColorScheme>>:
+            var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
             var proposedWidth = remainingWidth
-            var totalWidth = 0
             
             var requestedWidthsWithIndex = [(index: Int, width: Int)]()
             for (index, child) in children.enumerated() {
@@ -55,7 +60,6 @@ extension ViewNode {
                     if child.value.size.width < 1 {
                         child.value.size.width = wantedWidth
                     }
-                    totalWidth = totalWidth + wantedWidth
                 } else {
                     requestedWidthsWithIndex.append((index: index, width: wantedWidth))
                 }
@@ -65,9 +69,8 @@ extension ViewNode {
                 proposedWidth = remainingWidth
                 for unclearWidth in requestedWidthsWithIndex {
                     if children[unclearWidth.index].value.size.width < 1 {
-                        children[unclearWidth.index].value.size.width = proposedWidth
+                        children[unclearWidth.index].value.size.width = givenWidth
                     }
-                    totalWidth = totalWidth + proposedWidth
                 }
             }
             
@@ -91,31 +94,39 @@ extension ViewNode {
                     child.value.origin.y = previousNode.value.origin.y + previousNode.value.size.height + ViewNode.defaultSpacing
                 }
             }
-        }
-        
-        if self.value is HStackDrawable {
+        case is HStackDrawable:
             var remainingWidth = givenWidth - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
             var proposedWidth = remainingWidth / degree
             var totalWidth = internalSpacingRequirements
             
             var requestedWidthsWithIndex = [(index: Int, width: Int)]()
+            var dividerIndicies = [Int]()
             for (index, child) in children.enumerated() {
                 child.calculateSize(givenWidth: proposedWidth)
                 let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
                 if proposedWidth > wantedWidth {
+                    if child.value is DividerDrawable {
+                        dividerIndicies.append(index)
+                    }
                     remainingWidth = remainingWidth - wantedWidth
                     if child.value.size.width < 1 {
                         child.value.size.width = wantedWidth
                     }
                     totalWidth = totalWidth + wantedWidth
+                } else if child.value.size.width > 0 {
+                    remainingWidth = remainingWidth - child.value.size.width
                 } else {
                     requestedWidthsWithIndex.append((index: index, width: wantedWidth))
                 }
+                // print(child.value)
             }
+            
+            // print("UNCLEAR")
             
             if requestedWidthsWithIndex.count > 0 {
                 proposedWidth = remainingWidth / requestedWidthsWithIndex.count
                 for unclearWidth in requestedWidthsWithIndex {
+                    // print(children[unclearWidth.index].value)
                     if children[unclearWidth.index].value.size.width < 1 {
                         children[unclearWidth.index].value.size.width = proposedWidth
                     }
@@ -135,8 +146,15 @@ extension ViewNode {
             }
             
             let total = children.reduce(0, { $0 + $1.value.size.width }) + internalSpacingRequirements
-            let totalHeight = children.map { $0.value.size.height }.max()
-            value.size = Size(width: total, height: totalHeight ?? 0)
+            let totalHeight = children.map { $0.value.size.height }.max() ?? 1
+            
+            if dividerIndicies.count > 0 {
+                for dividerIndex in dividerIndicies {
+                    children[dividerIndex].value.size.height = totalHeight
+                }
+            }
+            
+            value.size = Size(width: total, height: totalHeight)
             
             for (index, child) in children.enumerated() {
                 if index > 0 {
@@ -144,6 +162,8 @@ extension ViewNode {
                     child.value.origin.x = previousNode.value.origin.x + previousNode.value.size.width + ViewNode.defaultSpacing
                 }
             }
+        default:
+            break
         }
     }
 }

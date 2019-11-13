@@ -21,6 +21,6 @@ public struct ImageDrawable: Drawable {
 
 extension ImageDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "Image [\(size)]"
+        return "Image [\(origin), \(size)]"
     }
 }
