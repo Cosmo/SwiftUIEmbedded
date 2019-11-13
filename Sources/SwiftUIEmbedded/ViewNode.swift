@@ -28,7 +28,7 @@ extension ViewNode: CustomStringConvertible {
 
 extension ViewNode {
     static var defaultSpacing: Int {
-        return 10
+        return 20
     }
     
     var internalSpacingRequirements: Int {
@@ -41,8 +41,13 @@ extension ViewNode {
 
         let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
         
-        if self.value is VStackDrawable || self.value is RootDrawable || self.value is ModifiedContentDrawable<PaddingModifier> || self.value is ModifiedContentDrawable<_BackgroundModifier<Color>> || self.value is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<Optional<Font>>> {
-            
+        switch value {
+        case is VStackDrawable,
+             is RootDrawable,
+             is ModifiedContentDrawable<PaddingModifier>,
+             is ModifiedContentDrawable<_BackgroundModifier<Color>>,
+             is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<Optional<Font>>>,
+             is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<ColorScheme>>:
             var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
             var proposedWidth = remainingWidth
             
@@ -89,9 +94,7 @@ extension ViewNode {
                     child.value.origin.y = previousNode.value.origin.y + previousNode.value.size.height + ViewNode.defaultSpacing
                 }
             }
-        }
-        
-        if self.value is HStackDrawable {
+        case is HStackDrawable:
             var remainingWidth = givenWidth - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
             var proposedWidth = remainingWidth / degree
             var totalWidth = internalSpacingRequirements
@@ -159,6 +162,8 @@ extension ViewNode {
                     child.value.origin.x = previousNode.value.origin.x + previousNode.value.size.width + ViewNode.defaultSpacing
                 }
             }
+        default:
+            break
         }
     }
 }
