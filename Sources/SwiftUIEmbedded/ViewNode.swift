@@ -16,7 +16,7 @@ public final class ViewNode: Node {
 
 extension ViewNode: Equatable {
     public static func == (lhs: ViewNode, rhs: ViewNode) -> Bool {
-        return lhs.value.debugDescription == rhs.value.debugDescription && lhs.parent == rhs.parent
+        return lhs.uuid == rhs.uuid && lhs.parent == rhs.parent
     }
 }
 
