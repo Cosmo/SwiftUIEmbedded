@@ -13,7 +13,7 @@ public struct CircleDrawable: Drawable {
     }
     
     public func wantedHeightForProposal(_ proposedHeight: Int) -> Int {
-        return proposedHeight
+        size.width > 0 ? size.width : proposedHeight
     }
 }
 
