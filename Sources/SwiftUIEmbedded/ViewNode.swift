@@ -40,17 +40,10 @@ extension ViewNode {
         guard isBranch else { return }
 
         switch value {
-        case is VStackDrawable,
-             is RootDrawable,
-             is ModifiedContentDrawable<PaddingModifier>,
-             is ModifiedContentDrawable<_BackgroundModifier<Color>>,
-             is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<Optional<Font>>>,
-             is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<ColorScheme>>:
-            calculateNodeWithVerticallyStackedNodes(givenWidth: givenWidth)
         case is HStackDrawable:
             calculateNodeWithHorizontallyStackedNodes(givenWidth: givenWidth)
         default:
-            break
+            calculateNodeWithVerticallyStackedNodes(givenWidth: givenWidth)
         }
     }
     
