@@ -13,7 +13,7 @@ public class HostingController<Content: View> {
     private var tree: ViewNode
     
     public init(rootView: Content, width: Int = 320, height: Int = 240) {
-        self.canvas = Pixels<ColorDepth>(width: width, height: height)
+        self.canvas = Pixels<ColorDepth>(width: width, height: height, canvasColor: ColorDepth.max)
         self.rootView = rootView
         self.tree = ViewNode(value: RootDrawable())
         (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
