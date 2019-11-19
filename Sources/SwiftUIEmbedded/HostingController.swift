@@ -42,7 +42,7 @@ public class HostingController<Content: View> {
                        y: y,
                        width: width,
                        height: node.value.size.height,
-                       color: ColorDepth.max,
+                       color: canvas.unsignedIntegerFromColor(Color.gray),
                        dotted: true,
                        brushSize: 1)
         
