@@ -3,9 +3,10 @@ import OpenSwiftUI
 struct ButtonDrawable: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
+    public var action: () -> Void
     
-    init() {
-        
+    init(action: @escaping () -> Void) {
+        self.action = action
     }
     
     public func wantedWidthForProposal(_ proposedWidth: Int) -> Int {
