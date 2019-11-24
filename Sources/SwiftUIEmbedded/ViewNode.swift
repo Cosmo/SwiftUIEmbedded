@@ -39,131 +39,132 @@ extension ViewNode {
     public func calculateSize(givenWidth: Int) {
         guard isBranch else { return }
 
+        switch value {
+        case is HStackDrawable:
+            calculateNodeWithHorizontallyStackedNodes(givenWidth: givenWidth)
+        default:
+            calculateNodeWithVerticallyStackedNodes(givenWidth: givenWidth)
+        }
+    }
+    
+    func calculateNodeWithVerticallyStackedNodes(givenWidth: Int) {
         let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
         
-        switch value {
-        case is VStackDrawable,
-             is RootDrawable,
-             is ModifiedContentDrawable<PaddingModifier>,
-             is ModifiedContentDrawable<_BackgroundModifier<Color>>,
-             is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<Optional<Font>>>,
-             is ModifiedContentDrawable<_EnvironmentKeyWritingModifier<ColorScheme>>:
-            var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
-            var proposedWidth = remainingWidth
-            
-            var requestedWidthsWithIndex = [(index: Int, width: Int)]()
-            for (index, child) in children.enumerated() {
-                child.calculateSize(givenWidth: proposedWidth)
-                let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
-                if proposedWidth > wantedWidth {
-                    remainingWidth = remainingWidth - wantedWidth
-                    if child.value.size.width < 1 {
-                        child.value.size.width = wantedWidth
-                    }
-                } else {
-                    requestedWidthsWithIndex.append((index: index, width: wantedWidth))
+        var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
+        var proposedWidth = remainingWidth
+        
+        var requestedWidthsWithIndex = [(index: Int, width: Int)]()
+        for (index, child) in children.enumerated() {
+            child.calculateSize(givenWidth: proposedWidth)
+            let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
+            if proposedWidth > wantedWidth {
+                remainingWidth = remainingWidth - wantedWidth
+                if child.value.size.width < 1 {
+                    child.value.size.width = wantedWidth
+                }
+            } else {
+                requestedWidthsWithIndex.append((index: index, width: wantedWidth))
+            }
+        }
+        
+        if requestedWidthsWithIndex.count > 0 {
+            proposedWidth = remainingWidth
+            for unclearWidth in requestedWidthsWithIndex {
+                if children[unclearWidth.index].value.size.width < 1 {
+                    children[unclearWidth.index].value.size.width = givenWidth
                 }
             }
-            
-            if requestedWidthsWithIndex.count > 0 {
-                proposedWidth = remainingWidth
-                for unclearWidth in requestedWidthsWithIndex {
-                    if children[unclearWidth.index].value.size.width < 1 {
-                        children[unclearWidth.index].value.size.width = givenWidth
-                    }
-                }
+        }
+        
+        var maxHeight = Int(paddingFromSelf.top + paddingFromSelf.bottom)
+        for child in children {
+            let childHeight = child.value.wantedHeightForProposal(remainingWidth)
+            if child.value.size.height < 1 {
+                child.value.size.height = childHeight
             }
-            
-            var maxHeight = Int(paddingFromSelf.top + paddingFromSelf.bottom)
-            for child in children {
-                let childHeight = child.value.wantedHeightForProposal(remainingWidth)
-                if child.value.size.height < 1 {
-                    child.value.size.height = childHeight
-                }
-                maxHeight += childHeight
+            maxHeight += childHeight
+        }
+        
+        let total = (children.map { $0.value.size.width }.max() ?? 0) + Int(paddingFromSelf.leading + paddingFromSelf.trailing)
+        let totalHeight = children.reduce(0, { $0 + $1.value.size.height }) + internalSpacingRequirements
+        
+        value.size = Size(width: total, height: totalHeight + Int(paddingFromSelf.top + paddingFromSelf.bottom))
+        
+        for (index, child) in children.enumerated() {
+            if index > 0 {
+                let previousNode = children[index - 1]
+                child.value.origin.y = previousNode.value.origin.y + previousNode.value.size.height + ViewNode.defaultSpacing
             }
-            
-            let total = (children.map { $0.value.size.width }.max() ?? 0) + Int(paddingFromSelf.leading + paddingFromSelf.trailing)
-            let totalHeight = children.reduce(0, { $0 + $1.value.size.height }) + internalSpacingRequirements
-            
-            value.size = Size(width: total, height: totalHeight + Int(paddingFromSelf.top + paddingFromSelf.bottom))
-            
-            for (index, child) in children.enumerated() {
-                if index > 0 {
-                    let previousNode = children[index - 1]
-                    child.value.origin.y = previousNode.value.origin.y + previousNode.value.size.height + ViewNode.defaultSpacing
+        }
+    }
+    
+    func calculateNodeWithHorizontallyStackedNodes(givenWidth: Int) {
+        var remainingWidth = givenWidth - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
+        var proposedWidth = remainingWidth / degree
+        var totalWidth = internalSpacingRequirements
+        
+        var requestedWidthsWithIndex = [(index: Int, width: Int)]()
+        var dividerIndicies = [Int]()
+        for (index, child) in children.enumerated() {
+            child.calculateSize(givenWidth: proposedWidth)
+            let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
+            if proposedWidth > wantedWidth {
+                if child.value is DividerDrawable {
+                    dividerIndicies.append(index)
                 }
+                remainingWidth = remainingWidth - wantedWidth
+                if child.value.size.width < 1 {
+                    child.value.size.width = wantedWidth
+                }
+                totalWidth = totalWidth + wantedWidth
+            } else if child.value.size.width > 0 {
+                remainingWidth = remainingWidth - child.value.size.width
+            } else {
+                requestedWidthsWithIndex.append((index: index, width: wantedWidth))
             }
-        case is HStackDrawable:
-            var remainingWidth = givenWidth - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
-            var proposedWidth = remainingWidth / degree
-            var totalWidth = internalSpacingRequirements
-            
-            var requestedWidthsWithIndex = [(index: Int, width: Int)]()
-            var dividerIndicies = [Int]()
-            for (index, child) in children.enumerated() {
-                child.calculateSize(givenWidth: proposedWidth)
-                let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
-                if proposedWidth > wantedWidth {
-                    if child.value is DividerDrawable {
-                        dividerIndicies.append(index)
-                    }
-                    remainingWidth = remainingWidth - wantedWidth
-                    if child.value.size.width < 1 {
-                        child.value.size.width = wantedWidth
-                    }
-                    totalWidth = totalWidth + wantedWidth
-                } else if child.value.size.width > 0 {
-                    remainingWidth = remainingWidth - child.value.size.width
-                } else {
-                    requestedWidthsWithIndex.append((index: index, width: wantedWidth))
+            // print(child.value)
+        }
+        
+        // print("UNCLEAR")
+        
+        if requestedWidthsWithIndex.count > 0 {
+            proposedWidth = remainingWidth / requestedWidthsWithIndex.count
+            for unclearWidth in requestedWidthsWithIndex {
+                // print(children[unclearWidth.index].value)
+                if children[unclearWidth.index].value.size.width < 1 {
+                    children[unclearWidth.index].value.size.width = proposedWidth
                 }
-                // print(child.value)
+                totalWidth = totalWidth + proposedWidth
             }
-            
-            // print("UNCLEAR")
-            
-            if requestedWidthsWithIndex.count > 0 {
-                proposedWidth = remainingWidth / requestedWidthsWithIndex.count
-                for unclearWidth in requestedWidthsWithIndex {
-                    // print(children[unclearWidth.index].value)
-                    if children[unclearWidth.index].value.size.width < 1 {
-                        children[unclearWidth.index].value.size.width = proposedWidth
-                    }
-                    totalWidth = totalWidth + proposedWidth
-                }
+        }
+        
+        var maxHeight = 0
+        for child in children {
+            let childHeight = child.value.wantedHeightForProposal(remainingWidth)
+            if child.value.size.height < 1 {
+                child.value.size.height = childHeight
             }
-            
-            var maxHeight = 0
-            for child in children {
-                let childHeight = child.value.wantedHeightForProposal(remainingWidth)
-                if child.value.size.height < 1 {
-                    child.value.size.height = childHeight
-                }
-                if childHeight > maxHeight {
-                    maxHeight = childHeight
-                }
+            if childHeight > maxHeight {
+                maxHeight = childHeight
             }
-            
-            let total = children.reduce(0, { $0 + $1.value.size.width }) + internalSpacingRequirements
-            let totalHeight = children.map { $0.value.size.height }.max() ?? 1
-            
-            if dividerIndicies.count > 0 {
-                for dividerIndex in dividerIndicies {
-                    children[dividerIndex].value.size.height = totalHeight
-                }
+        }
+        
+        let total = children.reduce(0, { $0 + $1.value.size.width }) + internalSpacingRequirements
+        let totalHeight = children.map { $0.value.size.height }.max() ?? 1
+        
+        if dividerIndicies.count > 0 {
+            for dividerIndex in dividerIndicies {
+                children[dividerIndex].value.size.height = totalHeight
             }
-            
-            value.size = Size(width: total, height: totalHeight)
-            
-            for (index, child) in children.enumerated() {
-                if index > 0 {
-                    let previousNode = children[index - 1]
-                    child.value.origin.x = previousNode.value.origin.x + previousNode.value.size.width + ViewNode.defaultSpacing
-                }
+        }
+        
+        value.size = Size(width: total, height: totalHeight)
+        
+        for (index, child) in children.enumerated() {
+            if index > 0 {
+                let previousNode = children[index - 1]
+                child.value.origin.x = previousNode.value.origin.x + previousNode.value.size.width + ViewNode.defaultSpacing
             }
-        default:
-            break
         }
     }
 }

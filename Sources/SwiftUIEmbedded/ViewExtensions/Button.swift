@@ -2,7 +2,7 @@ import OpenSwiftUI
 
 extension Button: ViewBuildable {
     public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
-        let node = ViewNode(value: ButtonDrawable())
+        let node = ViewNode(value: ButtonDrawable(action: _action))
         parent.addChild(node: node)
         
         if let element = _label as? ViewBuildable {

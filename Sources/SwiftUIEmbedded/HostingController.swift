@@ -4,6 +4,11 @@ import Pixels
 import AppKit
 #endif
 
+public struct Interaction {
+    public var frame: CGRect
+    public var action: () -> Void
+}
+
 public class HostingController<Content: View> {
     public typealias ColorDepth = UInt32
     public typealias ColorDepthProtocol = FixedWidthInteger & UnsignedInteger
@@ -12,11 +17,12 @@ public class HostingController<Content: View> {
     private var rootView: Content
     private var tree: ViewNode
     
+    public var interactiveAreas = [Interaction]()
+    
     public init(rootView: Content, width: Int = 320, height: Int = 240) {
-        self.canvas = Pixels<ColorDepth>(width: width, height: height)
+        self.canvas = Pixels<ColorDepth>(width: width, height: height, canvasColor: ColorDepth.max)
         self.rootView = rootView
         self.tree = ViewNode(value: RootDrawable())
-        (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
     }
     
     private func calculateTreeSizes() {
@@ -42,7 +48,7 @@ public class HostingController<Content: View> {
                        y: y,
                        width: width,
                        height: node.value.size.height,
-                       color: ColorDepth.max,
+                       color: canvas.unsignedIntegerFromColor(Color.gray),
                        dotted: true,
                        brushSize: 1)
         
@@ -92,6 +98,11 @@ public class HostingController<Content: View> {
             }
         }
         
+        if let button = node.value as? ButtonDrawable {
+            let frame = CGRect(x: x, y: y, width: width, height: height)
+            let action = Interaction(frame: frame, action: button.action)
+            interactiveAreas.append(action)
+        }
         
         if node.isBranch {
             for child in node.children {
@@ -100,19 +111,25 @@ public class HostingController<Content: View> {
         }
     }
     
-    #if canImport(AppKit)
-    public func createPixelBufferImage() -> NSImage? {
+    public func redrawnCanvas() -> Pixels<ColorDepth> {
+        canvas.clear()
+        
+        self.tree = ViewNode(value: RootDrawable())
+        (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
+        
         calculateTreeSizes()
         print(tree.lineBasedDescription)
         drawNodesRecursively(node: tree)
-        return canvas.image()
+        return canvas
+    }
+    
+    #if canImport(AppKit)
+    public func createPixelBufferImage() -> NSImage? {
+        return redrawnCanvas().image()
     }
     #endif
     
     public func createPixelBuffer() -> [ColorDepth] {
-        calculateTreeSizes()
-        print(tree.lineBasedDescription)
-        drawNodesRecursively(node: tree)
-        return canvas.bytes
+        return redrawnCanvas().bytes
     }
 }
