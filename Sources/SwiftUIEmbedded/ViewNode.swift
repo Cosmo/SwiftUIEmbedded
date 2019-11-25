@@ -28,7 +28,7 @@ extension ViewNode: CustomStringConvertible {
 
 extension ViewNode {
     static var defaultSpacing: Int {
-        return 20
+        return 8
     }
     
     var internalSpacingRequirements: Int {
@@ -100,14 +100,18 @@ extension ViewNode {
     
     func calculateNodeWithHorizontallyStackedNodes(givenWidth: Int) {
         var remainingWidth = givenWidth - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
-        var proposedWidth = remainingWidth / degree
         var totalWidth = internalSpacingRequirements
+        
+        var remainingChildren = degree
         
         var requestedWidthsWithIndex = [(index: Int, width: Int)]()
         var dividerIndicies = [Int]()
         for (index, child) in children.enumerated() {
+            let proposedWidth = remainingWidth / remainingChildren
+            
             child.calculateSize(givenWidth: proposedWidth)
             let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
+            
             if proposedWidth > wantedWidth {
                 if child.value is DividerDrawable {
                     dividerIndicies.append(index)
@@ -117,21 +121,20 @@ extension ViewNode {
                     child.value.size.width = wantedWidth
                 }
                 totalWidth = totalWidth + wantedWidth
+                remainingChildren -= 1
             } else if child.value.size.width > 0 {
                 remainingWidth = remainingWidth - child.value.size.width
+                remainingChildren -= 1
             } else {
                 requestedWidthsWithIndex.append((index: index, width: wantedWidth))
             }
-            // print(child.value)
         }
         
-        // print("UNCLEAR")
         
         if requestedWidthsWithIndex.count > 0 {
-            proposedWidth = remainingWidth / requestedWidthsWithIndex.count
+            let proposedWidth = remainingWidth / requestedWidthsWithIndex.count
             for unclearWidth in requestedWidthsWithIndex {
-                // print(children[unclearWidth.index].value)
-                if children[unclearWidth.index].value.size.width < 1 {
+                if children[unclearWidth.index].value.size.width == 0 {
                     children[unclearWidth.index].value.size.width = proposedWidth
                 }
                 totalWidth = totalWidth + proposedWidth

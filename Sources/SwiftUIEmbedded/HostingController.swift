@@ -12,17 +12,19 @@ public struct Interaction {
 public class HostingController<Content: View> {
     public typealias ColorDepth = UInt32
     public typealias ColorDepthProtocol = FixedWidthInteger & UnsignedInteger
-    private var canvas: Pixels<ColorDepth>
     
-    private var rootView: Content
-    private var tree: ViewNode
-    
+    public var tree: ViewNode
     public var interactiveAreas = [Interaction]()
     
-    public init(rootView: Content, width: Int = 320, height: Int = 240) {
+    private var canvas: Pixels<ColorDepth>
+    private var rootView: Content
+    private var debugViews: Bool
+    
+    public init(rootView: Content, width: Int = 320, height: Int = 240, debugViews: Bool = false) {
         self.canvas = Pixels<ColorDepth>(width: width, height: height, canvasColor: ColorDepth.max)
         self.rootView = rootView
         self.tree = ViewNode(value: RootDrawable())
+        self.debugViews = debugViews
     }
     
     private func calculateTreeSizes() {
@@ -44,13 +46,15 @@ public class HostingController<Content: View> {
         let width = node.value.size.width
         let height = node.value.size.height
         
-        canvas.drawBox(x: x,
-                       y: y,
-                       width: width,
-                       height: node.value.size.height,
-                       color: canvas.unsignedIntegerFromColor(Color.gray),
-                       dotted: true,
-                       brushSize: 1)
+        if debugViews {
+            canvas.drawBox(x: x,
+                           y: y,
+                           width: width,
+                           height: node.value.size.height,
+                           color: canvas.unsignedIntegerFromColor(Color.gray),
+                           dotted: true,
+                           brushSize: 1)
+        }
         
         if let backgroundNode = node.value as? ModifiedContentDrawable<_BackgroundModifier<Color>> {
             let color = canvas.unsignedIntegerFromColor(backgroundNode.modifier.background)
@@ -85,16 +89,18 @@ public class HostingController<Content: View> {
         }
         
         if let _ = node.value as? CircleDrawable {
-            canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2)
+            let color = canvas.unsignedIntegerFromColor(Color.primary)
+            canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2, color: color)
         }
         
         if let _ = node.value as? DividerDrawable {
             let ancestor = node.ancestors.first(where: { $0.value is VStackDrawable || $0.value is RootDrawable || $0.value is HStackDrawable })
+            let color = canvas.unsignedIntegerFromColor(Color.gray)
             
             if let ancestor = ancestor, ancestor.value is HStackDrawable {
-                canvas.drawVerticalLine(x: x + width / 2, y: y, height: height)
+                canvas.drawVerticalLine(x: x + width / 2, y: y, height: height, color: color)
             } else {
-                canvas.drawHorizontalLine(x: x, y: y + height / 2, width: width)
+                canvas.drawHorizontalLine(x: x, y: y + height / 2, width: width, color: color)
             }
         }
         
