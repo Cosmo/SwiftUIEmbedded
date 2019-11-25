@@ -28,7 +28,7 @@ extension ViewNode: CustomStringConvertible {
 
 extension ViewNode {
     static var defaultSpacing: Int {
-        return 20
+        return 8
     }
     
     var internalSpacingRequirements: Int {
