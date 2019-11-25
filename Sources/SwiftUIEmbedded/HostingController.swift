@@ -12,17 +12,19 @@ public struct Interaction {
 public class HostingController<Content: View> {
     public typealias ColorDepth = UInt32
     public typealias ColorDepthProtocol = FixedWidthInteger & UnsignedInteger
-    private var canvas: Pixels<ColorDepth>
     
-    private var rootView: Content
-    private var tree: ViewNode
-    
+    public var tree: ViewNode
     public var interactiveAreas = [Interaction]()
     
-    public init(rootView: Content, width: Int = 320, height: Int = 240) {
+    private var canvas: Pixels<ColorDepth>
+    private var rootView: Content
+    private var debugViews: Bool
+    
+    public init(rootView: Content, width: Int = 320, height: Int = 240, debugViews: Bool = false) {
         self.canvas = Pixels<ColorDepth>(width: width, height: height, canvasColor: ColorDepth.max)
         self.rootView = rootView
         self.tree = ViewNode(value: RootDrawable())
+        self.debugViews = debugViews
     }
     
     private func calculateTreeSizes() {
@@ -44,13 +46,15 @@ public class HostingController<Content: View> {
         let width = node.value.size.width
         let height = node.value.size.height
         
-        canvas.drawBox(x: x,
-                       y: y,
-                       width: width,
-                       height: node.value.size.height,
-                       color: canvas.unsignedIntegerFromColor(Color.gray),
-                       dotted: true,
-                       brushSize: 1)
+        if debugViews {
+            canvas.drawBox(x: x,
+                           y: y,
+                           width: width,
+                           height: node.value.size.height,
+                           color: canvas.unsignedIntegerFromColor(Color.gray),
+                           dotted: true,
+                           brushSize: 1)
+        }
         
         if let backgroundNode = node.value as? ModifiedContentDrawable<_BackgroundModifier<Color>> {
             let color = canvas.unsignedIntegerFromColor(backgroundNode.modifier.background)
