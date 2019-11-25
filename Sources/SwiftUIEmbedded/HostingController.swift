@@ -85,7 +85,8 @@ public class HostingController<Content: View> {
         }
         
         if let _ = node.value as? CircleDrawable {
-            canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2)
+            let color = canvas.unsignedIntegerFromColor(Color.primary)
+            canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2, color: color)
         }
         
         if let _ = node.value as? DividerDrawable {
