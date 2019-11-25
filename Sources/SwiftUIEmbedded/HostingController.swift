@@ -90,11 +90,12 @@ public class HostingController<Content: View> {
         
         if let _ = node.value as? DividerDrawable {
             let ancestor = node.ancestors.first(where: { $0.value is VStackDrawable || $0.value is RootDrawable || $0.value is HStackDrawable })
+            let color = canvas.unsignedIntegerFromColor(Color.gray)
             
             if let ancestor = ancestor, ancestor.value is HStackDrawable {
-                canvas.drawVerticalLine(x: x + width / 2, y: y, height: height)
+                canvas.drawVerticalLine(x: x + width / 2, y: y, height: height, color: color)
             } else {
-                canvas.drawHorizontalLine(x: x, y: y + height / 2, width: width)
+                canvas.drawHorizontalLine(x: x, y: y + height / 2, width: width, color: color)
             }
         }
         
