@@ -36,18 +36,58 @@ extension ViewNode {
         return numberOfSpacings * Self.defaultSpacing
     }
     
-    public func calculateSize(givenWidth: Int) {
+    public func calculateSize(givenWidth: Int, givenHeight: Int) {
         guard isBranch else { return }
 
         switch value {
         case is HStackDrawable:
-            calculateNodeWithHorizontallyStackedNodes(givenWidth: givenWidth)
+            calculateNodeWithHorizontallyStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight)
+        case is ZStackDrawable:
+            calculateNodeWithZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight)
         default:
-            calculateNodeWithVerticallyStackedNodes(givenWidth: givenWidth)
+            calculateNodeWithVerticallyStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight)
         }
     }
     
-    func calculateNodeWithVerticallyStackedNodes(givenWidth: Int) {
+    func calculateNodeWithZStackedNodes(givenWidth: Int, givenHeight: Int) {
+        let proposedWidth = givenWidth
+        let proposedHeight = givenHeight
+        
+        var maxWidth = 0
+        var maxHeight = 0
+        
+        for child in children {
+            child.calculateSize(givenWidth: proposedWidth, givenHeight: givenHeight)
+            let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
+            if proposedWidth > wantedWidth {
+                if child.value.size.width < 1 {
+                    child.value.size.width = wantedWidth
+                    maxWidth = max(maxWidth, wantedWidth)
+                }
+            } else {
+                child.value.size.width = proposedWidth
+                maxWidth = max(maxWidth, proposedWidth)
+            }
+        }
+        
+        for child in children {
+            child.calculateSize(givenWidth: proposedWidth, givenHeight: proposedHeight)
+            let wantedHeight = child.value.wantedHeightForProposal(proposedHeight)
+            if proposedHeight > wantedHeight {
+                if child.value.size.height < 1 {
+                    child.value.size.height = wantedHeight
+                    maxHeight = max(maxHeight, wantedHeight)
+                }
+            } else {
+                child.value.size.height = proposedHeight
+                maxHeight = max(maxHeight, proposedHeight)
+            }
+        }
+        
+        value.size = Size(width: maxWidth, height: maxHeight)
+    }
+    
+    func calculateNodeWithVerticallyStackedNodes(givenWidth: Int, givenHeight: Int) {
         let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
         
         var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
@@ -55,7 +95,7 @@ extension ViewNode {
         
         var requestedWidthsWithIndex = [(index: Int, width: Int)]()
         for (index, child) in children.enumerated() {
-            child.calculateSize(givenWidth: proposedWidth)
+            child.calculateSize(givenWidth: proposedWidth, givenHeight: givenHeight)
             let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
             if proposedWidth > wantedWidth {
                 remainingWidth = remainingWidth - wantedWidth
@@ -98,7 +138,7 @@ extension ViewNode {
         }
     }
     
-    func calculateNodeWithHorizontallyStackedNodes(givenWidth: Int) {
+    func calculateNodeWithHorizontallyStackedNodes(givenWidth: Int, givenHeight: Int) {
         var remainingWidth = givenWidth - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
         var totalWidth = internalSpacingRequirements
         
@@ -109,7 +149,7 @@ extension ViewNode {
         for (index, child) in children.enumerated() {
             let proposedWidth = remainingWidth / remainingChildren
             
-            child.calculateSize(givenWidth: proposedWidth)
+            child.calculateSize(givenWidth: proposedWidth, givenHeight: givenHeight)
             let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
             
             if proposedWidth > wantedWidth {
@@ -143,7 +183,7 @@ extension ViewNode {
         
         var maxHeight = 0
         for child in children {
-            let childHeight = child.value.wantedHeightForProposal(remainingWidth)
+            let childHeight = child.value.wantedHeightForProposal(givenHeight)
             if child.value.size.height < 1 {
                 child.value.size.height = childHeight
             }
