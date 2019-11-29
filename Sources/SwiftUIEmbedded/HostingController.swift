@@ -31,7 +31,7 @@ public class HostingController<Content: View> {
         let width = canvas.canvasWidth
         let height = canvas.canvasHeight
         let displaySize = Size(width: width, height: height)
-        tree.calculateSize(givenWidth: width)
+        tree.calculateSize(givenWidth: width, givenHeight: height)
         tree.value.size = displaySize
     }
     
@@ -89,7 +89,7 @@ public class HostingController<Content: View> {
                                         height: height,
                                         alignment: .left,
                                         color: color,
-                                        size: textNode.resolvedFont.fontSizeToZoomLevel)
+                                        font: textNode.resolvedFont.font)
         }
         
         if let imageNode = node.value as? ImageDrawable {

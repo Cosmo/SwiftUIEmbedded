@@ -42,17 +42,13 @@ public struct TextDrawable: Drawable {
     }
     
     public func wantedWidthForProposal(_ proposedWidth: Int) -> Int {
-        let widthPerGlyph = 6 * resolvedFont.fontSizeToZoomLevel
-        let width = text.count * widthPerGlyph
-        return width
+        let height = size.height > 0 ? size.height : Int.max
+        return resolvedFont.font.sizeForText(text, in: (width: proposedWidth, height: height)).width
     }
     
     public func wantedHeightForProposal(_ proposedHeight: Int) -> Int {
-        let heightPerGlyph = 9 * resolvedFont.fontSizeToZoomLevel
-        let textFullWidth = wantedWidthForProposal(Int.max)
-        let numberOfLines = Int(ceil(Double(textFullWidth) / Double(size.width)))
-        let height = numberOfLines * Int(heightPerGlyph)
-        return height
+        let width = size.width > 0 ? size.width : Int.max
+        return resolvedFont.font.sizeForText(text, in: (width: width, height: proposedHeight)).height
     }
 }
 

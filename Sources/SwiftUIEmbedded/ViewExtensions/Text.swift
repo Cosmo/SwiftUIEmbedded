@@ -1,5 +1,6 @@
 import OpenSwiftUI
 import CoreGraphics
+import Pixels
 
 extension Text: ViewBuildable {
     public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
@@ -13,7 +14,30 @@ extension Text: ViewBuildable {
 }
 
 extension Font {
-    var bitmapBaseFontSize: Int { return 8 }
+    var font: PixelFont {
+        switch fontSize {
+        case 0...4:
+            return FontSFCompactText8()
+        case 5:
+            return FontSFCompactText9()
+        case 6:
+            return FontSFCompactText10()
+        case 7:
+            return FontSFCompactText11()
+        case 8:
+            return FontSFCompactText12()
+        case 9:
+            return FontSFCompactText13()
+        case 10:
+            return FontSFCompactText14()
+        case 11:
+            return FontSFCompactText15()
+        case 12...20:
+            return FontSFCompactText16()
+        default:
+            return FontSFCompactText32()
+        }
+    }
     
     static func sizeFromTextStyle(_ textStyle: Font.TextStyle) -> CGFloat {
         switch textStyle {
@@ -28,16 +52,14 @@ extension Font {
         }
     }
     
-    var fontSizeToZoomLevel: Int {
-        var size: CGFloat
+    var fontSize: CGFloat {
         switch provider {
         case let textStyleProvider as TextStyleProvider:
-            size = Font.sizeFromTextStyle(textStyleProvider.style)
+            return Font.sizeFromTextStyle(textStyleProvider.style)
         case let systemProvider as SystemProvider:
-            size = systemProvider.size
+            return systemProvider.size
         default:
-            size = Font.sizeFromTextStyle(Font.TextStyle.body)
+            return Font.sizeFromTextStyle(Font.TextStyle.body)
         }
-        return max(Int(size) / bitmapBaseFontSize, 1)
     }
 }
