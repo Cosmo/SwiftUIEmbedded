@@ -5,6 +5,7 @@ public struct ColorDrawable: Drawable {
     public var size: Size = Size.zero
     
     let color: Color
+    
     public init(color: Color) {
         self.color = color
     }

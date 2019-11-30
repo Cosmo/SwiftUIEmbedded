@@ -19,6 +19,6 @@ struct ZStackDrawable: Drawable {
 
 extension ZStackDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "ZStack [\(size)]"
+        return "ZStack [\(origin), \(size)]"
     }
 }

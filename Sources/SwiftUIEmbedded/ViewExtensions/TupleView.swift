@@ -2,10 +2,12 @@ import OpenSwiftUI
 
 extension TupleView: ViewBuildable {
     public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
-        Mirror(reflecting: value).children.compactMap {
-            $0.value as? ViewBuildable
-        }.forEach {
-            $0.buildDebugTree(tree: &tree, parent: parent)
+        for child in Mirror(reflecting: value).children {
+            if let viewBuildable = child.value as? ViewBuildable {
+                viewBuildable.buildDebugTree(tree: &tree, parent: parent)
+            } else {
+                print("Can't render custom views, yet.")
+            }
         }
     }
 }

@@ -31,7 +31,7 @@ public class HostingController<Content: View> {
         let width = canvas.canvasWidth
         let height = canvas.canvasHeight
         let displaySize = Size(width: width, height: height)
-        tree.calculateSize(givenWidth: width)
+        tree.calculateSize(givenWidth: width, givenHeight: height)
         tree.value.size = displaySize
     }
     
@@ -56,6 +56,18 @@ public class HostingController<Content: View> {
                            brushSize: 1)
         }
         
+        if let colorNode = node.value as? ColorDrawable {
+            let color = canvas.unsignedIntegerFromColor(colorNode.color)
+            canvas.drawBox(x: x,
+                           y: y,
+                           width: width,
+                           height: node.value.size.height,
+                           color: color,
+                           dotted: false,
+                           brushSize: 1,
+                           filled: true)
+        }
+        
         if let backgroundNode = node.value as? ModifiedContentDrawable<_BackgroundModifier<Color>> {
             let color = canvas.unsignedIntegerFromColor(backgroundNode.modifier.background)
             canvas.drawBox(x: x,
@@ -77,7 +89,7 @@ public class HostingController<Content: View> {
                                         height: height,
                                         alignment: .left,
                                         color: color,
-                                        size: textNode.resolvedFont.fontSizeToZoomLevel)
+                                        font: textNode.resolvedFont.font)
         }
         
         if let imageNode = node.value as? ImageDrawable {
