@@ -39,7 +39,15 @@ public class HostingController<Content: View> {
         guard node.value.size.width > 0 else { return }
         
         let parentPadding = (node.parent?.value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
-
+        
+        var foregroundColor: Color?
+        for ancestor in node.ancestors {
+            if let color = (ancestor.value as? ModifiedContentDrawable<_EnvironmentKeyWritingModifier<Color?>>)?.modifier.value {
+                foregroundColor = color
+                break
+            }
+        }
+        
         let width = node.value.size.width
         let height = node.value.size.height
         
@@ -101,17 +109,17 @@ public class HostingController<Content: View> {
         }
         
         if let _ = node.value as? CircleDrawable {
-            let color = canvas.unsignedIntegerFromColor(Color.primary)
+            let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.primary)
             canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2, color: color)
         }
         
         if let _ = node.value as? RectangleDrawable {
-            let color = canvas.unsignedIntegerFromColor(Color.primary)
+            let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.primary)
             canvas.drawBox(x: x, y: y, width: width, height: height, color: color, filled: true)
         }
         
         if let _ = node.value as? DividerDrawable {
-            let color = canvas.unsignedIntegerFromColor(Color.gray)
+            let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.gray)
             canvas.drawBox(x: x, y: y, width: width, height: height, color: color, filled: true)
         }
         
