@@ -39,18 +39,18 @@ public class HostingController<Content: View> {
         guard node.value.size.width > 0 else { return }
         
         let parentPadding = (node.parent?.value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
+
+        let width = node.value.size.width
+        let height = node.value.size.height
         
         let x = node.ancestors.reduce(0, { $0 + $1.value.origin.x }) + node.value.origin.x + Int(parentPadding.leading)
         let y = node.ancestors.reduce(0, { $0 + $1.value.origin.y }) + node.value.origin.y + Int(parentPadding.top)
-        
-        let width = node.value.size.width
-        let height = node.value.size.height
         
         if debugViews {
             canvas.drawBox(x: x,
                            y: y,
                            width: width,
-                           height: node.value.size.height,
+                           height: height,
                            color: canvas.unsignedIntegerFromColor(Color.gray),
                            dotted: true,
                            brushSize: 1)
@@ -61,7 +61,7 @@ public class HostingController<Content: View> {
             canvas.drawBox(x: x,
                            y: y,
                            width: width,
-                           height: node.value.size.height,
+                           height: height,
                            color: color,
                            dotted: false,
                            brushSize: 1,
@@ -73,7 +73,7 @@ public class HostingController<Content: View> {
             canvas.drawBox(x: x,
                            y: y,
                            width: width,
-                           height: node.value.size.height,
+                           height: height,
                            color: color,
                            dotted: false,
                            brushSize: 1,
@@ -105,15 +105,14 @@ public class HostingController<Content: View> {
             canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2, color: color)
         }
         
+        if let _ = node.value as? RectangleDrawable {
+            let color = canvas.unsignedIntegerFromColor(Color.primary)
+            canvas.drawBox(x: x, y: y, width: width, height: height, color: color, filled: true)
+        }
+        
         if let _ = node.value as? DividerDrawable {
-            let ancestor = node.ancestors.first(where: { $0.value is VStackDrawable || $0.value is RootDrawable || $0.value is HStackDrawable })
             let color = canvas.unsignedIntegerFromColor(Color.gray)
-            
-            if let ancestor = ancestor, ancestor.value is HStackDrawable {
-                canvas.drawVerticalLine(x: x + width / 2, y: y, height: height, color: color)
-            } else {
-                canvas.drawHorizontalLine(x: x, y: y + height / 2, width: width, color: color)
-            }
+            canvas.drawBox(x: x, y: y, width: width, height: height, color: color, filled: true)
         }
         
         if let button = node.value as? ButtonDrawable {

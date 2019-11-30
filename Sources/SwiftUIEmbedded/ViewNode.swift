@@ -88,47 +88,69 @@ extension ViewNode {
     }
     
     func calculateNodeWithVerticallyStackedNodes(givenWidth: Int, givenHeight: Int) {
-        let paddingFromSelf = (value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
+        var remainingHeight = givenHeight - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
+        var remainingChildren = degree
         
-        var remainingWidth = givenWidth// - Int(paddingFromSelf.leading) - Int(paddingFromSelf.trailing)
-        var proposedWidth = remainingWidth
-        
-        var requestedWidthsWithIndex = [(index: Int, width: Int)]()
+        var requestedHeightsWithIndex = [(index: Int, height: Int)]()
+        var dividerIndicies = [Int]()
         for (index, child) in children.enumerated() {
-            child.calculateSize(givenWidth: proposedWidth, givenHeight: givenHeight)
-            let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
-            if proposedWidth > wantedWidth {
-                remainingWidth = remainingWidth - wantedWidth
-                if child.value.size.width < 1 {
-                    child.value.size.width = wantedWidth
+            let proposedHeight = remainingHeight / remainingChildren
+            
+            child.calculateSize(givenWidth: givenWidth, givenHeight: proposedHeight)
+            let wantedHeight = child.value.wantedHeightForProposal(proposedHeight)
+            
+            if child.value is DividerDrawable {
+                child.value.size.height = 1
+            }
+            
+            if proposedHeight > wantedHeight {
+                if child.value is DividerDrawable {
+                    dividerIndicies.append(index)
                 }
+                remainingHeight = remainingHeight - wantedHeight
+                if child.value.size.height < 1 {
+                    child.value.size.height = wantedHeight
+                }
+                remainingChildren -= 1
+            } else if child.value.size.height > 0 {
+                remainingHeight = remainingHeight - child.value.size.height
+                remainingChildren -= 1
             } else {
-                requestedWidthsWithIndex.append((index: index, width: wantedWidth))
+                requestedHeightsWithIndex.append((index: index, height: wantedHeight))
             }
         }
         
-        if requestedWidthsWithIndex.count > 0 {
-            proposedWidth = remainingWidth
-            for unclearWidth in requestedWidthsWithIndex {
-                if children[unclearWidth.index].value.size.width < 1 {
-                    children[unclearWidth.index].value.size.width = givenWidth
+        
+        if requestedHeightsWithIndex.count > 0 {
+            let proposedHeight = remainingHeight / requestedHeightsWithIndex.count
+            for unclearHeight in requestedHeightsWithIndex {
+                if children[unclearHeight.index].value.size.height == 0 {
+                    children[unclearHeight.index].value.size.height = proposedHeight
                 }
             }
         }
         
-        var maxHeight = Int(paddingFromSelf.top + paddingFromSelf.bottom)
+        var maxWidth = 0
         for child in children {
-            let childHeight = child.value.wantedHeightForProposal(remainingWidth)
-            if child.value.size.height < 1 {
-                child.value.size.height = childHeight
+            let childWidth = child.value.wantedWidthForProposal(givenWidth)
+            if child.value.size.width < 1 {
+                child.value.size.width = childWidth
             }
-            maxHeight += childHeight
+            if childWidth > maxWidth {
+                maxWidth = childWidth
+            }
         }
         
-        let total = (children.map { $0.value.size.width }.max() ?? 0) + Int(paddingFromSelf.leading + paddingFromSelf.trailing)
-        let totalHeight = children.reduce(0, { $0 + $1.value.size.height }) + internalSpacingRequirements
+        let total = children.reduce(0, { $0 + $1.value.size.height }) + internalSpacingRequirements
+        let totalWidth = children.map { $0.value.size.width }.max() ?? 1
         
-        value.size = Size(width: total, height: totalHeight + Int(paddingFromSelf.top + paddingFromSelf.bottom))
+        if dividerIndicies.count > 0 {
+            for dividerIndex in dividerIndicies {
+                children[dividerIndex].value.size.width = totalWidth
+            }
+        }
+        
+        value.size = Size(width: totalWidth, height: total)
         
         for (index, child) in children.enumerated() {
             if index > 0 {
@@ -140,7 +162,6 @@ extension ViewNode {
     
     func calculateNodeWithHorizontallyStackedNodes(givenWidth: Int, givenHeight: Int) {
         var remainingWidth = givenWidth - internalSpacingRequirements // - Int(paddingFromParent.leading) - Int(paddingFromParent.trailing)
-        var totalWidth = internalSpacingRequirements
         
         var remainingChildren = degree
         
@@ -152,6 +173,10 @@ extension ViewNode {
             child.calculateSize(givenWidth: proposedWidth, givenHeight: givenHeight)
             let wantedWidth = child.value.wantedWidthForProposal(proposedWidth)
             
+            if child.value is DividerDrawable {
+                child.value.size.width = 1
+            }
+            
             if proposedWidth > wantedWidth {
                 if child.value is DividerDrawable {
                     dividerIndicies.append(index)
@@ -160,7 +185,6 @@ extension ViewNode {
                 if child.value.size.width < 1 {
                     child.value.size.width = wantedWidth
                 }
-                totalWidth = totalWidth + wantedWidth
                 remainingChildren -= 1
             } else if child.value.size.width > 0 {
                 remainingWidth = remainingWidth - child.value.size.width
@@ -177,7 +201,6 @@ extension ViewNode {
                 if children[unclearWidth.index].value.size.width == 0 {
                     children[unclearWidth.index].value.size.width = proposedWidth
                 }
-                totalWidth = totalWidth + proposedWidth
             }
         }
         
