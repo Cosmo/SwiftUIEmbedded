@@ -16,26 +16,24 @@ extension Text: ViewBuildable {
 extension Font {
     var font: PixelFont {
         switch fontSize {
-        case 0...4:
-            return FontSFCompactText8()
-        case 5:
-            return FontSFCompactText9()
-        case 6:
-            return FontSFCompactText10()
-        case 7:
-            return FontSFCompactText11()
-        case 8:
-            return FontSFCompactText12()
-        case 9:
-            return FontSFCompactText13()
-        case 10:
-            return FontSFCompactText14()
-        case 11:
-            return FontSFCompactText15()
-        case 12...20:
-            return FontSFCompactText16()
-        default:
-            return FontSFCompactText32()
+        case ...6: return FontSFCompactText8()
+        case 7: return FontSFCompactText9()
+        case 8: return FontSFCompactText10()
+        case 9: return FontSFCompactText11()
+        case 10: return FontSFCompactText12()
+        case 11: return FontSFCompactText13()
+        case 12: return FontSFCompactText14()
+        case 13: return FontSFCompactText15()
+        case 14: return FontSFCompactText16()
+        case 15: return FontSFCompactText17()
+        case 16: return FontSFCompactText18()
+        case 17: return FontSFCompactText19()
+        case 18: return FontSFCompactText20()
+        case 19: return FontSFCompactText21()
+        case 20: return FontSFCompactText22()
+        case 21: return FontSFCompactText23()
+        case 22: return FontSFCompactText24()
+        default: return FontSFCompactText32()
         }
     }
     
