@@ -101,11 +101,13 @@ public class HostingController<Content: View> {
         }
         
         if let imageNode = node.value as? ImageDrawable {
-            canvas.drawBitmap(bytes: imageNode.imageData.bytes,
+            let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.primary)
+            canvas.drawBitmap(bytes: imageNode.bitmap.bytes,
                               x: x,
                               y: y,
-                              width: imageNode.imageData.size.width,
-                              height: imageNode.imageData.size.height)
+                              width: imageNode.bitmap.size.width,
+                              height: imageNode.bitmap.size.height,
+                              color: color)
         }
         
         if let _ = node.value as? CircleDrawable {

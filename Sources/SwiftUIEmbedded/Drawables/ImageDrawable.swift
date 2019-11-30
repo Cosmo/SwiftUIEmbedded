@@ -4,18 +4,18 @@ public struct ImageDrawable: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
     
-    public var imageData: ImageData
+    public var bitmap: Bitmap
     
-    public init(imageData: ImageData) {
-        self.imageData = imageData
+    public init(bitmap: Bitmap) {
+        self.bitmap = bitmap
     }
     
     public func wantedWidthForProposal(_ proposedWidth: Int) -> Int {
-        return imageData.size.width
+        return bitmap.size.width
     }
     
     public func wantedHeightForProposal(_ proposedHeight: Int) -> Int {
-        return imageData.size.height
+        return bitmap.size.height
     }
 }
 
