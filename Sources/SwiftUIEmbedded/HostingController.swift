@@ -40,28 +40,26 @@ public class HostingController<Content: View> {
         
         let parentPadding = (node.parent?.value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
         
-        let x = node.ancestors.reduce(0, { $0 + $1.value.origin.x }) + node.value.origin.x + Int(parentPadding.leading)
-        let y = node.ancestors.reduce(0, { $0 + $1.value.origin.y }) + node.value.origin.y + Int(parentPadding.top)
+        var foregroundColor: Color?
+        for ancestor in node.ancestors {
+            if let color = (ancestor.value as? ModifiedContentDrawable<_EnvironmentKeyWritingModifier<Color?>>)?.modifier.value {
+                foregroundColor = color
+                break
+            }
+        }
         
         let width = node.value.size.width
         let height = node.value.size.height
         
-        if debugViews {
-            canvas.drawBox(x: x,
-                           y: y,
-                           width: width,
-                           height: node.value.size.height,
-                           color: canvas.unsignedIntegerFromColor(Color.gray),
-                           dotted: true,
-                           brushSize: 1)
-        }
+        let x = node.ancestors.reduce(0, { $0 + $1.value.origin.x }) + node.value.origin.x + Int(parentPadding.leading)
+        let y = node.ancestors.reduce(0, { $0 + $1.value.origin.y }) + node.value.origin.y + Int(parentPadding.top)
         
         if let colorNode = node.value as? ColorDrawable {
             let color = canvas.unsignedIntegerFromColor(colorNode.color)
             canvas.drawBox(x: x,
                            y: y,
                            width: width,
-                           height: node.value.size.height,
+                           height: height,
                            color: color,
                            dotted: false,
                            brushSize: 1,
@@ -73,7 +71,7 @@ public class HostingController<Content: View> {
             canvas.drawBox(x: x,
                            y: y,
                            width: width,
-                           height: node.value.size.height,
+                           height: height,
                            color: color,
                            dotted: false,
                            brushSize: 1,
@@ -93,33 +91,54 @@ public class HostingController<Content: View> {
         }
         
         if let imageNode = node.value as? ImageDrawable {
-            canvas.drawBitmap(bytes: imageNode.imageData.bytes,
+            let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.primary)
+            canvas.drawBitmap(bytes: imageNode.bitmap.bytes,
                               x: x,
                               y: y,
-                              width: imageNode.imageData.size.width,
-                              height: imageNode.imageData.size.height)
+                              width: imageNode.bitmap.size.width,
+                              height: imageNode.bitmap.size.height,
+                              color: color)
         }
         
         if let _ = node.value as? CircleDrawable {
-            let color = canvas.unsignedIntegerFromColor(Color.primary)
-            canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2, color: color)
+            let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.primary)
+            let diameter = min(width, height)
+            let radius = diameter / 2
+            var offsetX = 0
+            if width > diameter {
+                offsetX = (width - diameter) / 2
+            }
+            var offsetY = 0
+            if height > diameter {
+                offsetY = (height - diameter) / 2
+            }
+            canvas.drawCircle(xm: x + radius + offsetX, ym: y + radius + offsetY, radius: radius, color: color)
+        }
+        
+        if let _ = node.value as? RectangleDrawable {
+            let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.primary)
+            canvas.drawBox(x: x, y: y, width: width, height: height, color: color, filled: true)
         }
         
         if let _ = node.value as? DividerDrawable {
-            let ancestor = node.ancestors.first(where: { $0.value is VStackDrawable || $0.value is RootDrawable || $0.value is HStackDrawable })
-            let color = canvas.unsignedIntegerFromColor(Color.gray)
-            
-            if let ancestor = ancestor, ancestor.value is HStackDrawable {
-                canvas.drawVerticalLine(x: x + width / 2, y: y, height: height, color: color)
-            } else {
-                canvas.drawHorizontalLine(x: x, y: y + height / 2, width: width, color: color)
-            }
+            let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.gray)
+            canvas.drawBox(x: x, y: y, width: width, height: height, color: color, filled: true)
         }
         
         if let button = node.value as? ButtonDrawable {
             let frame = CGRect(x: x, y: y, width: width, height: height)
             let action = Interaction(frame: frame, action: button.action)
             interactiveAreas.append(action)
+        }
+        
+        if debugViews {
+            canvas.drawBox(x: x,
+                           y: y,
+                           width: width,
+                           height: height,
+                           color: canvas.unsignedIntegerFromColor(Color.purple),
+                           dotted: true,
+                           brushSize: 1)
         }
         
         if node.isBranch {
@@ -136,7 +155,7 @@ public class HostingController<Content: View> {
         (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
         
         calculateTreeSizes()
-        print(tree.lineBasedDescription)
+        print(tree.lineBasedDescription.replacingOccurrences(of: "OpenSwiftUI.", with: ""))
         drawNodesRecursively(node: tree)
         return canvas
     }

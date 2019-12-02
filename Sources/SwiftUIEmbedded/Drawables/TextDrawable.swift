@@ -41,13 +41,13 @@ public struct TextDrawable: Drawable {
         self.modifiers = modifiers
     }
     
-    public func wantedWidthForProposal(_ proposedWidth: Int) -> Int {
-        let height = size.height > 0 ? size.height : Int.max
+    public func wantedWidthForProposal(_ proposedWidth: Int, otherLength: Int? = nil) -> Int {
+        let height = size.height > 0 ? size.height : otherLength ?? Int.max
         return resolvedFont.font.sizeForText(text, in: (width: proposedWidth, height: height)).width
     }
     
-    public func wantedHeightForProposal(_ proposedHeight: Int) -> Int {
-        let width = size.width > 0 ? size.width : Int.max
+    public func wantedHeightForProposal(_ proposedHeight: Int, otherLength: Int? = nil) -> Int {
+        let width = size.width > 0 ? size.width : otherLength ?? Int.max
         return resolvedFont.font.sizeForText(text, in: (width: width, height: proposedHeight)).height
     }
 }

@@ -1,6 +1,6 @@
 import OpenSwiftUI
 
-public struct SpacerDrawable: Drawable {
+public struct RectangleDrawable: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
     
@@ -17,8 +17,8 @@ public struct SpacerDrawable: Drawable {
     }
 }
 
-extension SpacerDrawable: CustomDebugStringConvertible {
+extension RectangleDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "Spacer [\(size)]"
+        return "Rectangle [\(size)]"
     }
 }

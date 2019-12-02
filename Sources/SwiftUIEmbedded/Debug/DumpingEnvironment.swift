@@ -32,11 +32,11 @@ public struct DumpingEnvironmentDrawable: Drawable {
     
     public var size: Size = Size.zero
     
-    public func wantedWidthForProposal(_ proposedWidth: Int) -> Int {
+    public func wantedWidthForProposal(_ proposedWidth: Int, otherLength: Int? = nil) -> Int {
         return proposedWidth
     }
     
-    public func wantedHeightForProposal(_ proposedHeight: Int) -> Int {
+    public func wantedHeightForProposal(_ proposedHeight: Int, otherLength: Int? = nil) -> Int {
         return proposedHeight
     }
     
