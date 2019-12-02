@@ -4,22 +4,26 @@ public struct DividerDrawable: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
     
-    public init() {
-        
+    public var axis: Axis
+    
+    public init(axis: Axis) {
+        self.axis = axis
     }
     
-    public func wantedWidthForProposal(_ proposedWidth: Int) -> Int {
-        if size.width > 0 {
-            return size.width
+    public func wantedWidthForProposal(_ proposedWidth: Int, otherLength: Int? = nil) -> Int {
+        if axis == .horizontal {
+            return proposedWidth
+        } else {
+            return 1
         }
-        return proposedWidth
     }
     
-    public func wantedHeightForProposal(_ proposedHeight: Int) -> Int {
-        if size.height > 0 {
-            return size.height
+    public func wantedHeightForProposal(_ proposedHeight: Int, otherLength: Int? = nil) -> Int {
+        if axis == .vertical {
+            return proposedHeight
+        } else {
+            return 1
         }
-        return proposedHeight
     }
 }
 

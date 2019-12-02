@@ -10,11 +10,11 @@ public struct ImageDrawable: Drawable {
         self.bitmap = bitmap
     }
     
-    public func wantedWidthForProposal(_ proposedWidth: Int) -> Int {
+    public func wantedWidthForProposal(_ proposedWidth: Int, otherLength: Int? = nil) -> Int {
         return bitmap.size.width
     }
     
-    public func wantedHeightForProposal(_ proposedHeight: Int) -> Int {
+    public func wantedHeightForProposal(_ proposedHeight: Int, otherLength: Int? = nil) -> Int {
         return bitmap.size.height
     }
 }

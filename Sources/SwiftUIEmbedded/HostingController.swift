@@ -54,16 +54,6 @@ public class HostingController<Content: View> {
         let x = node.ancestors.reduce(0, { $0 + $1.value.origin.x }) + node.value.origin.x + Int(parentPadding.leading)
         let y = node.ancestors.reduce(0, { $0 + $1.value.origin.y }) + node.value.origin.y + Int(parentPadding.top)
         
-        if debugViews {
-            canvas.drawBox(x: x,
-                           y: y,
-                           width: width,
-                           height: height,
-                           color: canvas.unsignedIntegerFromColor(Color.gray),
-                           dotted: true,
-                           brushSize: 1)
-        }
-        
         if let colorNode = node.value as? ColorDrawable {
             let color = canvas.unsignedIntegerFromColor(colorNode.color)
             canvas.drawBox(x: x,
@@ -112,7 +102,17 @@ public class HostingController<Content: View> {
         
         if let _ = node.value as? CircleDrawable {
             let color = canvas.unsignedIntegerFromColor(foregroundColor ?? Color.primary)
-            canvas.drawCircle(xm: x + (width / 2), ym: y + (width / 2), radius: width / 2, color: color)
+            let diameter = min(width, height)
+            let radius = diameter / 2
+            var offsetX = 0
+            if width > diameter {
+                offsetX = (width - diameter) / 2
+            }
+            var offsetY = 0
+            if height > diameter {
+                offsetY = (height - diameter) / 2
+            }
+            canvas.drawCircle(xm: x + radius + offsetX, ym: y + radius + offsetY, radius: radius, color: color)
         }
         
         if let _ = node.value as? RectangleDrawable {
@@ -131,6 +131,16 @@ public class HostingController<Content: View> {
             interactiveAreas.append(action)
         }
         
+        if debugViews {
+            canvas.drawBox(x: x,
+                           y: y,
+                           width: width,
+                           height: height,
+                           color: canvas.unsignedIntegerFromColor(Color.purple),
+                           dotted: true,
+                           brushSize: 1)
+        }
+        
         if node.isBranch {
             for child in node.children {
                 drawNodesRecursively(node: child)
@@ -145,7 +155,7 @@ public class HostingController<Content: View> {
         (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
         
         calculateTreeSizes()
-        print(tree.lineBasedDescription)
+        print(tree.lineBasedDescription.replacingOccurrences(of: "OpenSwiftUI.", with: ""))
         drawNodesRecursively(node: tree)
         return canvas
     }
