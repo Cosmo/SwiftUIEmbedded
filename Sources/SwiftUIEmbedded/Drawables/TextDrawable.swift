@@ -22,20 +22,6 @@ public struct TextDrawable: Drawable {
         return result ?? Font.body
     }
     
-    public var resolvedColor: Color {
-        var result: Color?
-        for modifier in modifiers {
-            switch modifier {
-            case .color(let color):
-                result = color
-            default:
-                continue
-            }
-        }
-        
-        return result ?? Color.black
-    }
-    
     public init(text: String, modifiers: [Text.Modifier]) {
         self.text = text
         self.modifiers = modifiers

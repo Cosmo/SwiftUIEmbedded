@@ -48,6 +48,14 @@ public class HostingController<Content: View> {
             }
         }
         
+        var colorScheme: ColorScheme = .light
+        for ancestor in node.ancestors {
+            if let scheme = (ancestor.value as? ModifiedContentDrawable<_EnvironmentKeyWritingModifier<ColorScheme>>)?.modifier.value {
+                colorScheme = scheme
+                break
+            }
+        }
+        
         let width = node.value.size.width
         let height = node.value.size.height
         
@@ -79,7 +87,18 @@ public class HostingController<Content: View> {
         }
         
         if let textNode = node.value as? TextDrawable {
-            let color = canvas.unsignedIntegerFromColor(textNode.resolvedColor)
+            var textColor = Color.primary
+            for modifier in textNode.modifiers {
+                switch modifier {
+                case .color(let color):
+                    if let color = color {
+                        textColor = color
+                    }
+                default: continue
+                }
+            }
+            
+            let color = canvas.unsignedIntegerFromColor(textColor, colorScheme: colorScheme)
             canvas.drawBitmapText(text: textNode.text,
                                         x: x,
                                         y: y,
