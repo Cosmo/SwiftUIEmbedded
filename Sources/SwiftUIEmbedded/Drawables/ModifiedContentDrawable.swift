@@ -19,6 +19,13 @@ public struct ModifiedContentDrawable<Modifier>: Drawable {
     }
 }
 
+extension ModifiedContentDrawable {
+    public var passthrough: Bool {
+        return true
+    }
+}
+
+
 extension ModifiedContentDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
         return "ModifiedContent [\(origin), \(size)] {\(modifier)}"

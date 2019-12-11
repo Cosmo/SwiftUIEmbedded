@@ -8,9 +8,12 @@ public final class ViewNode: Node {
     public weak var parent: ViewNode?
     public var children: [ViewNode]
     public var uuid = UUID()
+    public var processor: String
+    
     public init(value: Value) {
         self.value = value
         self.children = []
+        self.processor = ""
     }
 }
 
@@ -25,11 +28,6 @@ extension ViewNode: CustomStringConvertible {
         return "\(value)"
     }
 }
-
-protocol Stackable { }
-
-extension VStackDrawable: Stackable { }
-extension HStackDrawable: Stackable { }
 
 extension ViewNode {
     static var defaultSpacing: Int {
@@ -58,15 +56,20 @@ extension ViewNode {
     
     func calculateNodeWithZStackedNodes(givenWidth: Int, givenHeight: Int) {
         for (_, child) in children.enumerated() {
+            child.processor = "* ZStack"
             child.calculateSize(givenWidth: givenWidth, givenHeight: givenHeight)
-            let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight)
-            let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth)
-            child.value.size.width = wantedWidth
-            child.value.size.height = wantedHeight
+            if !child.value.passthrough {
+                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight)
+                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth)
+                child.value.size.width = wantedWidth
+                child.value.size.height = wantedHeight
+            }
         }
         
         value.size.width = children.reduce(0, { $0 + $1.value.size.width }) + internalSpacingRequirements
         value.size.height = children.reduce(0, { $0 + $1.value.size.height }) + internalSpacingRequirements
+        
+        processor = "ZStack"
     }
     
     func calculateNodeWithHorizontallyStackedNodes(givenWidth: Int, givenHeight: Int) {
@@ -90,6 +93,7 @@ extension ViewNode {
                     remainingWidth -= width
                     processedNodeIndices.append(index)
                     remainingChildren -= 1
+                    child.processor = "* HStack"
                 }
                 
                 // Dividers claim the whole height that is given and set their own width
@@ -100,6 +104,7 @@ extension ViewNode {
                     remainingWidth -= width
                     processedNodeIndices.append(index)
                     remainingChildren -= 1
+                    child.processor = "* HStack"
                 }
             }
         }
@@ -122,6 +127,7 @@ extension ViewNode {
                         remainingWidth -= wantedWidth
                         processedNodeIndices.append(index)
                         remainingChildren -= 1
+                        child.processor = "* HStack"
                         child.calculateSize(givenWidth: wantedWidth, givenHeight: wantedHeight)
                     }
                 }
@@ -142,12 +148,11 @@ extension ViewNode {
                     remainingWidth -= proposedWidth
                     processedNodeIndices.append(index)
                     remainingChildren -= 1
+                    child.processor = "* HStack"
                     child.calculateSize(givenWidth: proposedWidth, givenHeight: wantedHeight)
                 }
             }
         }
-        
-        print("Remaining Items:", remainingChildren)
         
         // Position element after element
         for (index, child) in children.enumerated() {
@@ -158,6 +163,8 @@ extension ViewNode {
         }
         
         value.size.width = children.reduce(0, { $0 + $1.value.size.width }) + internalSpacingRequirements
+        value.size.height = children.max(by: { (lhs, rhs) -> Bool in lhs.value.size.height < rhs.value.size.height })!.value.size.height
+        processor = "HStack"
     }
     
     func calculateNodeWithVerticallyStackedNodes(givenWidth: Int, givenHeight: Int) {
@@ -181,6 +188,7 @@ extension ViewNode {
                     remainingHeight -= height
                     processedNodeIndices.append(index)
                     remainingChildren -= 1
+                    child.processor = "* VStack"
                 }
                 
                 // Dividers claim the whole width that is given and set their own height
@@ -191,6 +199,7 @@ extension ViewNode {
                     remainingHeight -= height
                     processedNodeIndices.append(index)
                     remainingChildren -= 1
+                    child.processor = "* VStack"
                 }
             }
         }
@@ -213,7 +222,9 @@ extension ViewNode {
                         remainingHeight -= wantedHeight
                         processedNodeIndices.append(index)
                         remainingChildren -= 1
+                        child.processor = "* VStack"
                         child.calculateSize(givenWidth: wantedWidth, givenHeight: wantedHeight)
+
                     }
                 }
             }
@@ -224,38 +235,33 @@ extension ViewNode {
         
         // Process items that wont fit
         if remainingChildren > 0 {
-            print(remainingHeight)
-            
             var proposedHeight = remainingHeight / remainingChildren
             for (index, child) in children.enumerated() {
-                if !processedNodeIndices.contains(index), "\(child)".contains("Modified") {
+                if !processedNodeIndices.contains(index), child.value.passthrough {
                     let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: proposedHeight)
                     child.value.size.width = wantedWidth
                     remainingHeight -= child.value.size.height
                     processedNodeIndices.append(index)
                     remainingChildren -= 1
+                    child.processor = "* VStack"
                     child.calculateSize(givenWidth: wantedWidth, givenHeight: proposedHeight)
                 }
             }
             
-            print(remainingHeight)
-            
             proposedHeight = remainingHeight / remainingChildren
             for (index, child) in children.enumerated() {
                 if !processedNodeIndices.contains(index) {
-                    print(child)
                     let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: proposedHeight)
                     child.value.size.width = wantedWidth
                     child.value.size.height = proposedHeight
                     remainingHeight -= proposedHeight
                     processedNodeIndices.append(index)
                     remainingChildren -= 1
+                    child.processor = "* VStack"
                     child.calculateSize(givenWidth: wantedWidth, givenHeight: proposedHeight)
                 }
             }
         }
-        
-        print("Remaining Items:", remainingChildren)
         
         // Position element after element
         for (index, child) in children.enumerated() {
@@ -265,6 +271,8 @@ extension ViewNode {
             }
         }
         
+        // value.size.width = children.max(by: { (lhs, rhs) -> Bool in lhs.value.size.width > rhs.value.size.width })!.value.size.width + ViewNode.defaultSpacing
         value.size.height = children.reduce(0, { $0 + $1.value.size.height }) + internalSpacingRequirements
+        processor = "VStack"
     }
 }

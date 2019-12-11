@@ -6,4 +6,12 @@ public protocol Drawable: CustomDebugStringConvertible {
     
     func wantedWidthForProposal(_ proposedWidth: Int, otherLength: Int?) -> Int
     func wantedHeightForProposal(_ proposedHeight: Int, otherLength: Int?) -> Int
+    
+    var passthrough: Bool { get }
+}
+
+extension Drawable {
+    public var passthrough: Bool {
+        return false
+    }
 }
