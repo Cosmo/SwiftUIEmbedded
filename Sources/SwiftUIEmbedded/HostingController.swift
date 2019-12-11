@@ -75,7 +75,7 @@ public class HostingController<Content: View> {
         }
         
         if let backgroundNode = node.value as? ModifiedContentDrawable<_BackgroundModifier<Color>> {
-            let color = canvas.unsignedIntegerFromColor(backgroundNode.modifier.background)
+            let color = canvas.unsignedIntegerFromColor(backgroundNode.modifier.background, colorScheme: colorScheme)
             canvas.drawBox(x: x,
                            y: y,
                            width: width,
