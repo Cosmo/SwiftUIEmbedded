@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Devran on 03.11.19.
-//
-
 import Pixels
 import OpenSwiftUI
 

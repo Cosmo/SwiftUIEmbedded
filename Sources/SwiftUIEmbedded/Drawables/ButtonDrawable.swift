@@ -1,6 +1,6 @@
 import OpenSwiftUI
 
-struct ButtonDrawable: Drawable {
+public struct ButtonDrawable: Drawable {
     public var origin: Point = Point.zero
     public var size: Size = Size.zero
     public var action: () -> Void
