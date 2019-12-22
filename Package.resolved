@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "CoreGraphicsShim",
+        "repositoryURL": "https://github.com/Cosmo/CoreGraphicsShim.git",
+        "state": {
+          "branch": "master",
+          "revision": "bb5785fc0424e2876a1449449148c9e3308ad273",
+          "version": null
+        }
+      },
+      {
         "package": "Nodes",
         "repositoryURL": "https://github.com/Cosmo/Nodes.git",
         "state": {
