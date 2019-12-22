@@ -1,6 +1,6 @@
 import OpenSwiftUI
-import Foundation
 import Nodes
+import Foundation
 
 public final class ViewNode: Node {
     public typealias Value = Drawable

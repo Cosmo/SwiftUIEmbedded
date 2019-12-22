@@ -1,6 +1,6 @@
 import OpenSwiftUI
-import CoreGraphics
 import Pixels
+import Foundation
 
 extension Text: ViewBuildable {
     public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
