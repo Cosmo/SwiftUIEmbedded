@@ -1,5 +1,6 @@
 import OpenSwiftUI
 import Pixels
+import Foundation
 #if canImport(AppKit)
 import AppKit
 #endif
