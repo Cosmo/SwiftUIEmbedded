@@ -17,7 +17,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(url: "https://github.com/Cosmo/OpenSwiftUI.git", .branch("master")),
+        .package(url: "https://github.com/Cosmo/OpenSwiftUI.git", .branch("shim")),
         .package(url: "https://github.com/Cosmo/Nodes.git", .branch("master")),
         .package(url: "https://github.com/Cosmo/Pixels.git", .branch("master")),
         .package(url: "https://github.com/Cosmo/CoreGraphicsShim.git", .branch("master")),
