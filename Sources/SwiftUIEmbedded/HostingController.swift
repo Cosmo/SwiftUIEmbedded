@@ -1,6 +1,12 @@
 import OpenSwiftUI
 import Pixels
+
+#if canImport(Foundation)
 import Foundation
+#else
+import CoreGraphicsShim
+#endif
+
 #if canImport(AppKit)
 import AppKit
 #endif

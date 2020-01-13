@@ -1,4 +1,3 @@
-import Foundation
 import OpenSwiftUI
 
 public struct TextDrawable: Drawable {

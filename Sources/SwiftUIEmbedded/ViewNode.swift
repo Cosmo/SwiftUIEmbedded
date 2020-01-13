@@ -1,6 +1,11 @@
 import OpenSwiftUI
 import Nodes
+
+#if canImport(Foundation)
 import Foundation
+#else
+import CoreGraphicsShim
+#endif
 
 public final class ViewNode: Node {
     public typealias Value = Drawable
