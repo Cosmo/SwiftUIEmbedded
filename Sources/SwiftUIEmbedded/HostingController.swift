@@ -181,7 +181,9 @@ public class HostingController<Content: View> {
         (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &tree, parent: tree)
         
         calculateTreeSizes()
+        #if canImport(Foundation)
         print(tree.lineBasedDescription.replacingOccurrences(of: "OpenSwiftUI.", with: ""))
+        #endif
         drawNodesRecursively(node: tree)
         return canvas
     }
